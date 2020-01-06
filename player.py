@@ -4,7 +4,10 @@ import json
 
 
 class Player:
-    def __init__(self, data):
+    def __init__(self):
+        r = requests.post(f"{url}/api/adv/status/",
+                          headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
+        data = r.json()
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']

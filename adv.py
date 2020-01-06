@@ -7,11 +7,11 @@ from api import url, key
 # key = open("api_key.txt", "r").read()
 # url = "https://lambda-treasure-hunt.herokuapp.com"
 
-r = requests.post(f"{url}/api/adv/status/",
-                  headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
-data = r.json()
+# r = requests.post(f"{url}/api/adv/status/",
+#                   headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
+# data = r.json()
 # return data
-player = Player(data)
+player = Player()
 print(player.name)
 # Load API key
 
