@@ -4,24 +4,7 @@ import json
 from player import Player
 from api import url, key
 
-# key = open("api_key.txt", "r").read()
-# url = "https://lambda-treasure-hunt.herokuapp.com"
-
-# r = requests.post(f"{url}/api/adv/status/",
-#                   headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
-# data = r.json()
-# return data
 player = Player()
-print(player.name)
-# Load API key
-
-
-# def check_room():
-#     r = requests.get(f"{url}/api/adv/init/",
-#                      headers={'Authorization': f"Token {key}"})
-#     data = r.json()
-#     del data['players']
-#     return data
 
 
 # def read_map():
