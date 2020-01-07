@@ -1,4 +1,6 @@
 from api import url, key
+from miner import mine
+
 import requests
 import json
 
@@ -25,7 +27,7 @@ class Player:
 
     def _get_status(self):
         r = requests.post(f"{url}/api/adv/status/",
-                          headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
+                        headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
         return r.json()
 
     def _read_map(self):
@@ -35,7 +37,7 @@ class Player:
 
     def check_room(self):
         r = requests.get(f"{url}/api/adv/init/",
-                         headers={'Authorization': f"Token {key}"})
+                        headers={'Authorization': f"Token {key}"})
         data = r.json()
         del data['players']
         return data
@@ -61,3 +63,6 @@ class Player:
             self.current_room = next_room
         else:
             print("You cannot move in that direction.")
+
+    def start_mine(self):
+        mine()
