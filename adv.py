@@ -5,7 +5,7 @@ from player import Player
 from api import url, key
 
 player = Player()
-
+player.travel('n')
 # def add_to_map(room):
 #     map = read_map()
 #     if room['room_id'] in map:
