@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import requests
 import json
 
@@ -21,3 +22,15 @@ player.travel('n')
 
 # def move(direction):
 #     pass
+=======
+import requests
+import json
+
+from player import Player
+from api import url, key
+
+player = Player()
+
+# player.travel('n')
+# player.travel('s')
+>>>>>>> 98e4cfda5f03fc186f8e0e0e09e3a1d7528ffe4d
