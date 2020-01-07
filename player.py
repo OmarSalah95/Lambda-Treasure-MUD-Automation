@@ -6,7 +6,7 @@ import json
 class Player:
     def __init__(self):
         data = self._get_status()
-        current_map = self._read_map()
+        current_map = self._read_file('map.txt')
 
         self.name = data['name']
         self.cooldown = data['cooldown']
@@ -22,15 +22,16 @@ class Player:
         self.messages = []
         self.map = current_map
         self.current_room = current_map['0']
+        self.graph = self._read_file('graph.txt')
 
     def _get_status(self):
         r = requests.post(f"{url}/api/adv/status/",
                           headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
         return r.json()
 
-    def _read_map(self):
-        with open('map.txt') as map_file:
-            data = json.load(map_file)
+    def _read_file(self, file):
+        with open(file) as f:
+            data = json.load(f)
             return data
 
     def check_room(self):
@@ -56,7 +57,7 @@ class Player:
         self.messages = data['messages']
 
     def travel(self, direction):
-        next_room = self.currentRoom.get_room_in_direction(direction)
+        next_room = self.current_room.get_room_in_direction(direction)
         if next_room is not None:
             self.current_room = next_room
         else:
