@@ -6,14 +6,6 @@ from api import url, key
 
 player = Player()
 
-
-# def read_map():
-#     with open('map.txt') as map_file:
-#         data = json.load(map_file)
-#         print(f"current map: {data}")
-#         return data
-
-
 # def add_to_map(room):
 #     map = read_map()
 #     if room['room_id'] in map:

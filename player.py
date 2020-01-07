@@ -6,6 +6,8 @@ import json
 class Player:
     def __init__(self):
         data = self._get_status()
+        current_map = self._read_map()
+
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']
@@ -18,7 +20,8 @@ class Player:
         self.status = []
         self.errors = []
         self.messages = []
-        self.map = self._read_map()
+        self.map = current_map
+        self.current_room = current_map['0']
 
     def _get_status(self):
         r = requests.post(f"{url}/api/adv/status/",
@@ -28,7 +31,6 @@ class Player:
     def _read_map(self):
         with open('map.txt') as map_file:
             data = json.load(map_file)
-            print(f"current map: {data}")
             return data
 
     def check_room(self):
@@ -53,11 +55,9 @@ class Player:
         self.errors = data['errors']
         self.messages = data['messages']
 
-    # def travel(self, direction, showRooms=False):
-    #     nextRoom = self.currentRoom.getRoomInDirection(direction)
-    #     if nextRoom is not None:
-    #         self.currentRoom = nextRoom
-    #         if (showRooms):
-    #             nextRoom.printRoomDescription(self)
-    #     else:
-    #         print("You cannot move in that direction.")
+    def travel(self, direction):
+        next_room = self.currentRoom.get_room_in_direction(direction)
+        if next_room is not None:
+            self.current_room = next_room
+        else:
+            print("You cannot move in that direction.")
