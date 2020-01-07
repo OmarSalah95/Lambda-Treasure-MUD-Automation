@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-import requests
-import json
-
-from player import Player
-from api import url, key
-
-player = Player()
-
-player.travel('n')
-# player.travel('s')
-=======
 import requests
 import json
 import random
@@ -17,6 +5,9 @@ import time
 # from util import Stack, Queue
 from player import Player
 from api import url, key, opposite
+
+
+
 
 
 class Queue():
@@ -115,7 +106,7 @@ def generate_path(target):
                 # >>> IF YES, RETURN PATH (excluding starting room) so player can go travel shortest path to room with unexplored exit
                 if target != "?":
                     final_dir = next(
-                        (k for k, v in player.graph[last_room].items() if v == target), None)
+                        (k for k, v in player.graph[last_room].items() if str(v) == target), None)
                     p.append(final_dir)
                 return p[1:]
             # Else mark it as visited
@@ -164,8 +155,9 @@ player = Player()
 
 # player.travel('n')
 # player.travel('s')
-explore_maze()
-
+# explore_maze()
+travel_to_target(79)
+player.pick_up_loot("tiny treasure")
 # TRAVERSAL TEST
 # visited_rooms = set()
 # player.currentRoom = world.startingRoom
@@ -179,4 +171,3 @@ explore_maze()
 # else:
 #     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
 #     print(f"{len(roomGraph) - len(visited_rooms)} unvisited rooms")
->>>>>>> 3e7405daf6c611b83fd5fc19b82c3a364c06fcbc

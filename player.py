@@ -27,7 +27,7 @@ class Player:
 
     def _get_status(self):
         r = requests.post(f"{url}/api/adv/status/",
-                          headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
+                        headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
         return r.json()
 
     def _read_file(self, filepath):
@@ -41,7 +41,7 @@ class Player:
 
     def check_room(self):
         r = requests.get(f"{url}/api/adv/init/",
-                         headers={'Authorization': f"Token {key}"})
+                        headers={'Authorization': f"Token {key}"})
         data = r.json()
         if 'players' in data:
             del data['players']
@@ -97,3 +97,17 @@ class Player:
             
         def get_coin(self):
             mine()
+            
+        def pick_up_loot(self, item):
+            time.sleep(self.cooldown)
+            json  = {"name":item}
+            req = requests.post(f"{url}/api/adv/take/", headers={
+                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
+            self.check_self()
+            print(req)
+        
+        def drop_loot(self, item):
+            json  = {"name":item}
+            req = requests.post(f"{url}/api/adv/drop/", headers={
+                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
+            print(req)
