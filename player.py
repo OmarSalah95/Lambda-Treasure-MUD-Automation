@@ -80,17 +80,23 @@ class Player:
                 del next_room['players']
             next_id = next_room['room_id']
 
-            if str(next_id) not in self.graph:  # add to graph and map, and make graph connections
+            # add to graph and map, in addition to making graph connections
+            if str(next_id) not in self.graph:
                 self.graph[str(next_id)] = {
                     e: '?' for e in next_room['exits']}
 
-                self.graph[str(curr_id)][direction] = next_id
-                self.graph[str(next_id)][opposite[direction]] = curr_id
-                self._write_file('graph.txt', self.graph)
+            # make graph connections and update graph
+            self.graph[str(curr_id)][direction] = next_id
+            self.graph[str(next_id)][opposite[direction]] = curr_id
+            self._write_file('graph.txt', self.graph)
 
-                self.map[next_id] = next_room
-                self._write_file('map.txt', self.map)
-            # either way, change current room
+            # update map with room info
+            self.map[next_id] = next_room
+            self._write_file('map.txt', self.map)
+
+            # change current room and update cooldown
             self.current_room = next_room
             self.cooldown = self.current_room['cooldown']
-            print(f"Now the player is in {self.current_room}")
+            print(f"Now the player is in {self.current_room['room_id']}")
+            print(
+                f"Total number of rooms explored so far: {len(self.graph)}\n")
