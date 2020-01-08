@@ -42,6 +42,7 @@ def get_name(name):
         # travel to shop
         # sell all items in inventory
         sell_loot()
+        player.check_self()
     # travel to Pirate Ry's
     travel_to_target(467)
     # purchase name
