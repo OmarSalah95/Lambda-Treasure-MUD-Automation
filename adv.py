@@ -50,17 +50,25 @@ def generate_path(target):
             if target in list(player.graph[last_room].values()):
                 # >>> IF YES, RETURN PATH (excluding starting room)
                 if target != "?":
-                    final_dir = next(
-                        (k for k, v in player.graph[last_room].items() if v == target), None)
-                    p.append(final_dir)
+                    # final_dir = next(
+                    #     (k for k, v in player.graph[last_room].items() if str(v) == target), '?')
+                    # final_dir ='?'
+
+                    # for d in player.graph[last_room]:
+                    #     if player.graph[last_room][d] is target:
+                    #         final_dir=d
+
+                    p.append(target)
+                    print(p[1:])
                 return p[1:]
             # Else mark it as visited
             v.add(last_room)
             # Then add a PATH to its neighbors to the back of the queue
             for direction in player.graph[last_room]:
-                path_copy = p.copy()
-                path_copy.append(player.graph[last_room][direction])
-                q.enqueue(path_copy)
+                if player.graph[last_room][direction] != '?':
+                    path_copy = p.copy()
+                    path_copy.append(player.graph[last_room][direction])
+                    q.enqueue(path_copy)
 
 
 def travel_to_target(target='?'):
@@ -91,6 +99,43 @@ def explore_maze():
     print("Map complete!")
 
 
-player = Player()
+if __name__ == '__main__':
+    player = Player()
+    running = True
+    command_list = {
+        "loot": {"call": player.pick_up_loot, "arg_count": 1},
+        "drop": {"call": player.drop_loot, "arg_count": 1},
+        "travelTo": {"call": travel_to_target, "arg_count": 1},
+        "moveTo": {"call": player.travel, "arg_count": 1}
+    }
 
-explore_maze()
+    while running:
+        user_data = input('Enter command: ').split(' ')
+
+        cmd = user_data[0]
+        args = user_data[1:]
+
+        for i, v in enumerate(args):
+            if v.isdigit():
+                args[i] = int(v)
+
+        if cmd == 'quit':
+            running = False
+
+        elif cmd not in command_list:
+            print("That Command is not part of our command list try again.")
+            continue
+        else:
+            if command_list[cmd]["arg_count"] == 1:
+                command_list[cmd]['call'](
+                    " ".join(args) if len(args) > 1 else args[0])
+
+        # command_list[cmd]()
+    # player.travel('n')
+    # player.travel('s')
+    # explore_maze()
+    # travel_to_target(79)
+    # player.pick_up_loot('tiny treasure')
+    # print(player.inventory)
+    # player.drop_loot('tiny treasure')
+    # print(player.inventory)

@@ -2,6 +2,7 @@ from api import url, key, opposite
 import requests
 import json
 import time
+from miner import mine
 
 
 class Player:
@@ -48,7 +49,9 @@ class Player:
         return data
 
     def check_self(self):
+
         data = self._get_status()
+        print(data)
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']
@@ -100,3 +103,22 @@ class Player:
             print(f"Now the player is in {self.current_room['room_id']}")
             print(
                 f"Total number of rooms explored so far: {len(self.graph)}\n")
+
+    def get_coin(self):
+        mine()
+
+    def pick_up_loot(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/take/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        time.sleep(req['cooldown'])
+        self.check_self()
+
+    def drop_loot(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/drop/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        time.sleep(req['cooldown'])
+        self.check_self()
