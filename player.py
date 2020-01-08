@@ -44,12 +44,13 @@ class Player:
         r = requests.get(f"{url}/api/adv/init/",
                          headers={'Authorization': f"Token {key}"})
         data = r.json()
+        # print(data)
         if 'players' in data:
             del data['players']
+
         return data
 
     def check_self(self):
-
         data = self._get_status()
         print(data)
         self.name = data['name']
@@ -123,5 +124,23 @@ class Player:
         time.sleep(req['cooldown'])
         self.check_self()
 
+<<<<<<< HEAD
     def pray(self):
         time.sleep(self.cooldown)
+=======
+    def buy_name(self, name):
+        time.sleep(self.cooldown)
+        json = {"name": name}
+        req = requests.post(f"{url}/api/adv/change_name/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
+
+        time.sleep(req['cooldown'])
+
+        json['confirm'] = "aye"
+        r1_conf = requests.post(f"{url}/api/adv/change_name/", headers={
+                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(r1_conf)
+        time.sleep(r1_conf['cooldown'])
+        self.check_self()
+>>>>>>> master
