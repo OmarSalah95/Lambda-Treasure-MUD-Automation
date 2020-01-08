@@ -106,17 +106,14 @@ def sell_loot():
         time.sleep(player.cooldown)
         print(player.inventory)
         for item in player.inventory:
-            print("in for loop")
             json = {"name": item}
-            print(json)
             r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
             time.sleep(r1['cooldown'])
             json['confirm'] = "yes"
             r1_conf = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
             print(r1_conf)
             time.sleep(r1_conf['cooldown'])
-    
-    
+            player.check_self()
     
     
 if __name__ == '__main__':
