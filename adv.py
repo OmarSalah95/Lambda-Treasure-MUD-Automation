@@ -8,6 +8,61 @@ from player import Player
 from api import url, key, opposite, Queue
 
 
+def get_name(name):
+    
+    #Make list of treasure rooms
+    treasure_rooms = []
+    for k, v in player.map.items():
+        if "tiny treasure" in v["items"]:
+            treasure_rooms.append(k)
+    print("The following rooms have treasure:", treasure_rooms)
+
+    while player.gold < 1000: #This is automatically updated, otherwise have to check server
+        while player.encumbrance < player.strength:
+            #find room with treasure
+            # go there
+            print
+            current_treasure_room = treasure_rooms[0]
+            travel_to_target(int(current_treasure_room))
+
+            # pick up treasure
+            # while there are still items to pick up:
+            #while len(player.map[str(player.current_room["room_id"])]["items"]) > 0:
+            player.pick_up_loot("tiny treasure")
+
+            # update map entry for room to reflect taken treasure
+            player.map[current_treasure_room]["items"] = []
+            player._write_file('map.txt', player.map)
+            treasure_rooms = treasure_rooms[1:]
+
+            # If all treasure in map has been taken, go straight to shop
+            if len(treasure_rooms) < 1:
+                break
+
+        # travel to shop
+        # sell all items in inventory
+        sell_loot()
+    # travel to Pirate Ry's
+    travel_to_target(467)
+    # purchase name  
+    player.buy_name(name)
+
+def sell_loot():
+        travel_to_target(1)
+        time.sleep(player.cooldown)
+        print(player.inventory)
+        for item in player.inventory:
+            print("in for loop")
+            json = {"name": item}
+            print(json)
+            r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+            time.sleep(r1['cooldown'])
+            json['confirm'] = "yes"
+            r1_conf = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+            print(r1_conf)
+            time.sleep(r1_conf['cooldown'])
+
+
 def explore_random():
     """
     Returns a random unexplored exit direction from the current room
@@ -101,6 +156,7 @@ def explore_maze():
 
 player = Player()
 
+
 def sell_loot():
         travel_to_target(1)
         time.sleep(player.cooldown)
@@ -116,7 +172,10 @@ def sell_loot():
             player.check_self()
     
     
+
 if __name__ == '__main__':
+
+
     running = True
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
@@ -126,6 +185,7 @@ if __name__ == '__main__':
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
         "sellLoot":{"call": sell_loot, "arg_count": 0},
+        "roomDeets": {"call": player.check_room, "arg_count": 0}
     }
 
     while running:

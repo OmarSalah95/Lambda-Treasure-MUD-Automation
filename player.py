@@ -44,8 +44,10 @@ class Player:
         r = requests.get(f"{url}/api/adv/init/",
                          headers={'Authorization': f"Token {key}"})
         data = r.json()
+        # print(data)
         if 'players' in data:
             del data['players']
+
         return data
 
     def check_self(self):
@@ -115,6 +117,7 @@ class Player:
         time.sleep(req['cooldown'])
         self.check_self()
 
+
     def drop_loot(self, item):
         time.sleep(self.cooldown)
         json = {"name": item}
@@ -123,4 +126,12 @@ class Player:
         time.sleep(req['cooldown'])
         self.check_self()
 
-    
+    def buy_name(self, name):
+        time.sleep(self.cooldown)
+        json = {"name": name}
+        req = requests.post(f"{url}/api/adv/change_name/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        time.sleep(req['cooldown'])
+        self.check_self()
+
+
