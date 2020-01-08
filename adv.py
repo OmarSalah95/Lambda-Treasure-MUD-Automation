@@ -164,7 +164,7 @@ def acquire_powers():
     After maze has been generated, now go to shrines and acquire powers by praying.
     Order of importance is flight -> dash -> everything else if ready.
     """
-    pass
+    flight_shrine = 22
 
 
 def sell_loot():
@@ -186,7 +186,6 @@ def sell_loot():
 
 if __name__ == '__main__':
     player = Player()
-    get_name("Ad-R0ck")
     running = True
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
@@ -196,7 +195,8 @@ if __name__ == '__main__':
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
-        "roomDeets": {"call": player.check_room, "arg_count": 0}
+        "roomDeets": {"call": player.check_room, "arg_count": 0},
+        "getName": {"call": get_name, "arg_count": 1}
     }
 
     while running:

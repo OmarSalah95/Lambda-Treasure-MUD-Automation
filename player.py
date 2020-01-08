@@ -106,7 +106,10 @@ class Player:
                 f"Total number of rooms explored so far: {len(self.graph)}\n")
 
     def get_coin(self):
-        mine()
+        while True:
+            time.sleep(self.cooldown)
+            data = mine()
+            self.cooldown = data['cooldown']
 
     def pick_up_loot(self, item):
         time.sleep(self.cooldown)
@@ -138,4 +141,19 @@ class Player:
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         print(r1_conf)
         time.sleep(r1_conf['cooldown'])
+        self.check_self()
+
+    def examine(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/examine/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
+
+    def pray(self):
+        time.sleep(self.cooldown)
+        req = requests.post(f"{url}/api/adv/examine/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
+        time.sleep(req['cooldown'])
         self.check_self()
