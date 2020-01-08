@@ -102,20 +102,33 @@ def generate_path(target):
         last_room = str(p[-1])
         if last_room not in v:
             # Check if it has unexplored rooms
+            print(target)
+            print(list(player.graph[last_room].values()))
+            
             if target in list(player.graph[last_room].values()):
                 # >>> IF YES, RETURN PATH (excluding starting room) so player can go travel shortest path to room with unexplored exit
                 if target != "?":
-                    final_dir = next(
-                        (k for k, v in player.graph[last_room].items() if str(v) == target), None)
-                    p.append(final_dir)
+                    # final_dir = next(
+                    #     (k for k, v in player.graph[last_room].items() if str(v) == target), '?')
+                    # final_dir ='?'
+                    
+                    
+                    
+                    # for d in player.graph[last_room]:
+                    #     if player.graph[last_room][d] is target:
+                    #         final_dir=d
+                    
+                    p.append(target)
+                    print(p[1:])
                 return p[1:]
             # Else mark it as visited
             v.add(last_room)
             # Then add a PATH to its neighbors to the back of the queue
             for direction in player.graph[last_room]:
-                path_copy = p.copy()
-                path_copy.append(player.graph[last_room][direction])
-                q.enqueue(path_copy)
+                if player.graph[last_room][direction] !='?':
+                    path_copy = p.copy()
+                    path_copy.append(player.graph[last_room][direction])
+                    q.enqueue(path_copy)
 
 
 def travel_to_target(target='?'):
@@ -156,8 +169,11 @@ player = Player()
 # player.travel('n')
 # player.travel('s')
 # explore_maze()
-travel_to_target(79)
-player.pick_up_loot("tiny treasure")
+# travel_to_target(79)
+player.pick_up_loot('tiny treasure')
+print(player.inventory)
+player.drop_loot('tiny treasure')
+print(player.inventory)
 # TRAVERSAL TEST
 # visited_rooms = set()
 # player.currentRoom = world.startingRoom
