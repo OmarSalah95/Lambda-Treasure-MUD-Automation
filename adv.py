@@ -164,16 +164,57 @@ def explore_maze():
 
 
 # The actual maze traversal function
-player = Player()
+# player = Player()
 
-# player.travel('n')
-# player.travel('s')
-# explore_maze()
-# travel_to_target(79)
-player.pick_up_loot('tiny treasure')
-print(player.inventory)
-player.drop_loot('tiny treasure')
-print(player.inventory)
+# # player.travel('n')
+# # player.travel('s')
+# # explore_maze()
+# # travel_to_target(79)
+# player.pick_up_loot('tiny treasure')
+# print(player.inventory)
+# player.drop_loot('tiny treasure')
+# print(player.inventory)
+
+
+
+if __name__ == '__main__':
+    player = Player()
+    running = True
+    command_list = {
+        "loot": {"call": player.pick_up_loot, "arg_count": 1},
+        "drop": {"call": player.drop_loot, "arg_count": 1},
+        "travelTo": {"call": travel_to_target, "arg_count": 1}
+    }
+    
+    while running:
+        user_data = input('Enter command: ').split(' ')
+        
+        cmd = user_data[0]
+        args = user_data[1:]
+        
+        for i, v in enumerate(args):
+            if v.isdigit():
+                args[i] = int(v)
+        
+        if cmd == 'quit':
+            running = False
+            
+        elif cmd not in command_list:
+            print("That Command is not part of our command list try again.")
+            continue
+        else:
+            if command_list[cmd]["arg_count"] == 1:
+                command_list[cmd]['call'](" ".join(args) if len(args) > 1 else args[0])
+                
+        # command_list[cmd]()
+    # player.travel('n')
+    # player.travel('s')
+    # explore_maze()
+    # travel_to_target(79)
+    # player.pick_up_loot('tiny treasure')
+    # print(player.inventory)
+    # player.drop_loot('tiny treasure')
+    # print(player.inventory)
 # TRAVERSAL TEST
 # visited_rooms = set()
 # player.currentRoom = world.startingRoom
