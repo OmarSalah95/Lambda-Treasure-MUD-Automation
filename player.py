@@ -124,10 +124,6 @@ class Player:
         time.sleep(req['cooldown'])
         self.check_self()
 
-<<<<<<< HEAD
-    def pray(self):
-        time.sleep(self.cooldown)
-=======
     def buy_name(self, name):
         time.sleep(self.cooldown)
         json = {"name": name}
@@ -143,4 +139,3 @@ class Player:
         print(r1_conf)
         time.sleep(r1_conf['cooldown'])
         self.check_self()
->>>>>>> master
