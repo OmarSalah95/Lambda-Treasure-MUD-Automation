@@ -48,7 +48,9 @@ class Player:
         return data
 
     def check_self(self):
+        
         data = self._get_status()
+        print(data)
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']
@@ -95,19 +97,21 @@ class Player:
             self.cooldown = self.current_room['cooldown']
             print(f"Now the player is in {self.current_room}")
             
-        def get_coin(self):
-            mine()
-            
-        def pick_up_loot(self, item):
-            time.sleep(self.cooldown)
-            json  = {"name":item}
-            req = requests.post(f"{url}/api/adv/take/", headers={
-                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
-            self.check_self()
-            print(req)
+    def get_coin(self):
+        mine()
         
-        def drop_loot(self, item):
-            json  = {"name":item}
-            req = requests.post(f"{url}/api/adv/drop/", headers={
-                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
-            print(req)
+    def pick_up_loot(self, item):
+        time.sleep(self.cooldown)
+        json  = {"name":item}
+        req = requests.post(f"{url}/api/adv/take/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        time.sleep(req['cooldown'])
+        self.check_self()
+        
+    def drop_loot(self, item):
+        time.sleep(self.cooldown)
+        json  = {"name":item}
+        req = requests.post(f"{url}/api/adv/drop/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        time.sleep(req['cooldown'])
+        self.check_self()
