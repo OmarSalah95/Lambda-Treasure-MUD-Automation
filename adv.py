@@ -181,10 +181,12 @@ if __name__ == '__main__':
     player = Player()
     running = True
     command_list = {
+        "moveTo": {"call": player.travel, "arg_count": 1},
+        "buildMap": {"call": explore_maze, "arg_count": 0},
+        "travelTo": {"call": travel_to_target, "arg_count": 1},
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
-        "travelTo": {"call": travel_to_target, "arg_count": 1},
-        "moveTo": {"call": player.travel, "arg_count": 1}
+        "mine": {"call": player.mine, "arg_count": 0},
     }
     
     while running:
@@ -202,7 +204,7 @@ if __name__ == '__main__':
             
         elif cmd not in command_list:
             print("That Command is not part of our command list try again.")
-            continue
+
         else:
             if command_list[cmd]["arg_count"] == 1:
                 command_list[cmd]['call'](" ".join(args) if len(args) > 1 else args[0])
