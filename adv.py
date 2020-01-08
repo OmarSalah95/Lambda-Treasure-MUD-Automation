@@ -184,7 +184,7 @@ if __name__ == '__main__':
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "travelTo": {"call": travel_to_target, "arg_count": 1},
-        "exitTo": {"call": player.travel, "arg_count": 1}
+        "moveTo": {"call": player.travel, "arg_count": 1}
     }
     
     while running:
