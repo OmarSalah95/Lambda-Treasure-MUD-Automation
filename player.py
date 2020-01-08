@@ -4,6 +4,7 @@ import json
 import time
 from miner import mine
 
+
 class Player:
     def __init__(self):
         data = self._get_status()
@@ -27,7 +28,7 @@ class Player:
 
     def _get_status(self):
         r = requests.post(f"{url}/api/adv/status/",
-                        headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
+                          headers={'Authorization': f"Token {key}", "Content-Type": "application/json"})
         return r.json()
 
     def _read_file(self, filepath):
@@ -41,14 +42,15 @@ class Player:
 
     def check_room(self):
         r = requests.get(f"{url}/api/adv/init/",
-                        headers={'Authorization': f"Token {key}"})
+                         headers={'Authorization': f"Token {key}"})
         data = r.json()
+        # print(data)
         if 'players' in data:
             del data['players']
+
         return data
 
     def check_self(self):
-        
         data = self._get_status()
         print(data)
         self.name = data['name']
@@ -82,36 +84,74 @@ class Player:
                 del next_room['players']
             next_id = next_room['room_id']
 
-            if str(next_id) not in self.graph:  # add to graph and map, and make graph connections
+            # add to graph and map, in addition to making graph connections
+            if str(next_id) not in self.graph:
                 self.graph[str(next_id)] = {
                     e: '?' for e in next_room['exits']}
 
-                self.graph[str(curr_id)][direction] = next_id
-                self.graph[str(next_id)][opposite[direction]] = curr_id
-                self._write_file('graph.txt', self.graph)
+            # make graph connections and update graph
+            self.graph[str(curr_id)][direction] = next_id
+            self.graph[str(next_id)][opposite[direction]] = curr_id
+            self._write_file('graph.txt', self.graph)
 
-                self.map[next_id] = next_room
-                self._write_file('map.txt', self.map)
-            # either way, change current room
+            # update map with room info
+            self.map[next_id] = next_room
+            self._write_file('map.txt', self.map)
+
+            # change current room and update cooldown
             self.current_room = next_room
             self.cooldown = self.current_room['cooldown']
-            print(f"Now the player is in {self.current_room}")
-            
+            print(f"Now the player is in {self.current_room['room_id']}")
+            print(
+                f"Total number of rooms explored so far: {len(self.graph)}\n")
+
     def get_coin(self):
+        time.sleep(self.cooldown)
         mine()
-        
+
     def pick_up_loot(self, item):
         time.sleep(self.cooldown)
-        json  = {"name":item}
+        json = {"name": item}
         req = requests.post(f"{url}/api/adv/take/", headers={
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         time.sleep(req['cooldown'])
         self.check_self()
-        
+
     def drop_loot(self, item):
         time.sleep(self.cooldown)
-        json  = {"name":item}
+        json = {"name": item}
         req = requests.post(f"{url}/api/adv/drop/", headers={
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        time.sleep(req['cooldown'])
+        self.check_self()
+
+    def buy_name(self, name):
+        time.sleep(self.cooldown)
+        json = {"name": name}
+        req = requests.post(f"{url}/api/adv/change_name/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
+
+        time.sleep(req['cooldown'])
+
+        json['confirm'] = "aye"
+        r1_conf = requests.post(f"{url}/api/adv/change_name/", headers={
+                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(r1_conf)
+        time.sleep(r1_conf['cooldown'])
+        self.check_self()
+
+    def examine(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/examine/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
+
+    def pray(self):
+        time.sleep(self.cooldown)
+        req = requests.post(f"{url}/api/adv/examine/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
         time.sleep(req['cooldown'])
         self.check_self()
