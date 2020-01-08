@@ -9,8 +9,8 @@ from api import url, key, opposite, Queue
 
 
 def get_name(name):
-    
-    #Make list of treasure rooms
+
+    # Make list of treasure rooms
     treasure_rooms = []
     for k, v in player.map.items():
         if "tiny treasure" in v["items"]:
@@ -18,9 +18,9 @@ def get_name(name):
     treasure_rooms[len(treasure_rooms)//2:]
     print("The following rooms have treasure:", treasure_rooms)
 
-    while player.gold < 1000: #This is automatically updated, otherwise have to check server
+    while player.gold < 1000:  # This is automatically updated, otherwise have to check server
         while player.encumbrance < player.strength:
-            #find room with treasure
+            # find room with treasure
             # go there
             print
             current_treasure_room = treasure_rooms[0]
@@ -28,7 +28,7 @@ def get_name(name):
 
             # pick up treasure
             # while there are still items to pick up:
-            #while len(player.map[str(player.current_room["room_id"])]["items"]) > 0:
+            # while len(player.map[str(player.current_room["room_id"])]["items"]) > 0:
             player.pick_up_loot("tiny treasure")
 
             # update map entry for room to reflect taken treasure
@@ -46,23 +46,26 @@ def get_name(name):
         player.check_self()
     # travel to Pirate Ry's
     travel_to_target(467)
-    # purchase name  
+    # purchase name
     player.buy_name(name)
 
+
 def sell_loot():
-        travel_to_target(1)
-        time.sleep(player.cooldown)
-        print(player.inventory)
-        for item in player.inventory:
-            print("in for loop")
-            json = {"name": item}
-            print(json)
-            r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
-            time.sleep(r1['cooldown'])
-            json['confirm'] = "yes"
-            r1_conf = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
-            print(r1_conf)
-            time.sleep(r1_conf['cooldown'])
+    travel_to_target(1)
+    time.sleep(player.cooldown)
+    print(player.inventory)
+    for item in player.inventory:
+        print("in for loop")
+        json = {"name": item}
+        print(json)
+        r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
+                                                            "Content-Type": "application/json"}, json=json).json()
+        time.sleep(r1['cooldown'])
+        json['confirm'] = "yes"
+        r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
+                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(r1_conf)
+        time.sleep(r1_conf['cooldown'])
 
 
 def explore_random():
@@ -156,8 +159,13 @@ def explore_maze():
         travel_to_target()
     print("Map complete!")
 
-player = Player()
 
+def acquire_powers():
+    """
+    After maze has been generated, now go to shrines and acquire powers by praying.
+    Order of importance is flight -> dash -> everything else if ready.
+    """
+    flight_shrine = 22
 
 def sell_loot():
         travel_to_target(1)
@@ -180,12 +188,13 @@ if __name__ == '__main__':
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
         "buildMap": {"call": explore_maze, "arg_count": 0},
-        "travelTo": {"call": travel_to_target, "arg_count": 1}, 
+        "travelTo": {"call": travel_to_target, "arg_count": 1},
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
-        "sellLoot":{"call": sell_loot, "arg_count": 0},
-        "roomDeets": {"call": player.check_room, "arg_count": 0}
+        "sellLoot": {"call": sell_loot, "arg_count": 0},
+        "roomDeets": {"call": player.check_room, "arg_count": 0},
+        "getName": {"call": get_name, "arg_count": 1}
     }
 
     while running:
@@ -206,7 +215,8 @@ if __name__ == '__main__':
 
         else:
             if command_list[cmd]["arg_count"] == 1:
-                command_list[cmd]['call'](" ".join(args) if len(args) > 1 else args[0])
+                command_list[cmd]['call'](
+                    " ".join(args) if len(args) > 1 else args[0])
             elif command_list[cmd]["arg_count"] == 0:
                 command_list[cmd]['call']()
 

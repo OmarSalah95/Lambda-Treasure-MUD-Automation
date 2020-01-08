@@ -6,7 +6,6 @@ from uuid import uuid4
 from timeit import default_timer as timer
 
 
-
 def mine():
     """
     Simple Proof of Work Algorithm
@@ -19,24 +18,26 @@ def mine():
                         headers={'Authorization': f"Token {key}"}).json()
     last_proof = data['proof']
     difficulty = data["difficulty"]
-    
-    
-    previous_hash=hashlib.sha256(f'{last_proof}'.encode()).hexdigest()
-    
+    time.sleep(data['cooldown'])
+
+    # previous_hash = hashlib.sha256(f'{last_proof}'.encode()).hexdigest()
+
     start = timer()
-    
+    print(f"Data for last proof: {data}")
     print("Searching for next proof")
     proof = 0
     #  TODO: Your code here
-    while not valid_proof(previous_hash, proof, difficulty):
-        proof+=3126
-    
+    while not valid_proof(last_proof, proof, difficulty):
+        proof += 3126
+
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
-    
-    json  = {"proof":proof}
+
+    json = {"proof": proof}
     req = requests.post(f"{url}/api/bc/mine/ ",
                         headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
     print("Proof Submitted")
+    print(req.json())
+    return req.json()
 
 
 def valid_proof(last_hash, proof, difficulty):

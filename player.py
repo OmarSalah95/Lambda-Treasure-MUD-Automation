@@ -105,7 +105,6 @@ class Player:
             print(
                 f"Total number of rooms explored so far: {len(self.graph)}\n")
 
-    
     def get_coin(self):
         time.sleep(self.cooldown)
         mine()
@@ -117,7 +116,6 @@ class Player:
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         time.sleep(req['cooldown'])
         self.check_self()
-
 
     def drop_loot(self, item):
         time.sleep(self.cooldown)
@@ -132,14 +130,28 @@ class Player:
         json = {"name": name}
         req = requests.post(f"{url}/api/adv/change_name/", headers={
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
 
         time.sleep(req['cooldown'])
 
         json['confirm'] = "aye"
-        r1_conf = requests.post(f"{url}/api/adv/change_name/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+        r1_conf = requests.post(f"{url}/api/adv/change_name/", headers={
+                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         print(r1_conf)
-        print(req)
         time.sleep(r1_conf['cooldown'])
         self.check_self()
 
+    def examine(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/examine/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
 
+    def pray(self):
+        time.sleep(self.cooldown)
+        req = requests.post(f"{url}/api/adv/examine/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(req)
+        time.sleep(req['cooldown'])
+        self.check_self()
