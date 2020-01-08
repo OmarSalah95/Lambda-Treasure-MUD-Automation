@@ -1,10 +1,10 @@
 from api import url, key
-import hashlib
-import requests
-import sys
+
+import requests, sys, random, hashlib, json
+
 from uuid import uuid4
 from timeit import default_timer as timer
-import random
+
 
 
 def mine():
@@ -16,7 +16,7 @@ def mine():
     :return: A valid proof for the provided block
     """
     data = requests.get(f"{url}/api/bc/last_proof/",
-                        headers={'Authorization': f"Token {key}"})
+                        headers={'Authorization': f"Token {key}"}).json()
     last_proof = data['proof']
     difficulty = data["difficulty"]
     

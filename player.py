@@ -107,6 +107,7 @@ class Player:
 
     
     def get_coin(self):
+        time.sleep(self.cooldown)
         mine()
 
     def pick_up_loot(self, item):

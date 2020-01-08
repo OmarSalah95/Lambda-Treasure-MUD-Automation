@@ -174,7 +174,7 @@ def sell_loot():
             player.check_self()
     
     
-get_name("Wizard Omar")
+# get_name("Wizard Omar")
 if __name__ == '__main__':
     running = True
     command_list = {
