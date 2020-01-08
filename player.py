@@ -122,3 +122,6 @@ class Player:
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         time.sleep(req['cooldown'])
         self.check_self()
+
+    def pray(self):
+        time.sleep(self.cooldown)

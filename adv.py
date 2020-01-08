@@ -99,8 +99,16 @@ def explore_maze():
     print("Map complete!")
 
 
+def acquire_powers():
+    """
+    After maze has been generated, now go to shrines and acquire powers by praying.
+    Order of importance is flight -> dash -> everything else if ready.
+    """
+
+
 if __name__ == '__main__':
     player = Player()
+    print(player.current_room)
     running = True
     command_list = {
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
