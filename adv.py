@@ -15,6 +15,7 @@ def get_name(name):
     for k, v in player.map.items():
         if "tiny treasure" in v["items"]:
             treasure_rooms.append(k)
+    treasure_rooms[len(treasure_rooms)//2:]
     print("The following rooms have treasure:", treasure_rooms)
 
     while player.gold < 1000: #This is automatically updated, otherwise have to check server
@@ -172,10 +173,8 @@ def sell_loot():
             player.check_self()
     
     
-
+get_name("Wizard Omar")
 if __name__ == '__main__':
-
-
     running = True
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
