@@ -6,7 +6,7 @@ import time
 from player import Player
 
 from api import url, key, opposite, Queue
-
+player = Player()
 
 def get_name(name):
 
@@ -194,7 +194,8 @@ if __name__ == '__main__':
         "mine": {"call": player.get_coin, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
-        "getName": {"call": get_name, "arg_count": 1}
+        "getName": {"call": get_name, "arg_count": 1},
+        "examine": {"call": player.examine, "arg_count": 1},
     }
 
     while running:
