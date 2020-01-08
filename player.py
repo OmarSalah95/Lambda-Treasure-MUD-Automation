@@ -49,7 +49,6 @@ class Player:
         return data
 
     def check_self(self):
-
         data = self._get_status()
         print(data)
         self.name = data['name']
@@ -104,6 +103,7 @@ class Player:
             print(
                 f"Total number of rooms explored so far: {len(self.graph)}\n")
 
+    
     def get_coin(self):
         mine()
 
@@ -122,3 +122,5 @@ class Player:
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         time.sleep(req['cooldown'])
         self.check_self()
+
+    

@@ -76,7 +76,8 @@ def travel_to_target(target='?'):
     Runs a BFS to specific room or to nearest room with unexplored exit,
     then moves through that path in order.
     """
-
+    if player.current_room["room_id"] == target:
+        return
     bfs_path = generate_path(target)
     print(f"new path to follow! {bfs_path}")
     while bfs_path is not None and len(bfs_path) > 0:
@@ -98,17 +99,36 @@ def explore_maze():
         travel_to_target()
     print("Map complete!")
 
+player = Player()
 
+def sell_loot():
+        travel_to_target(1)
+        time.sleep(player.cooldown)
+        print(player.inventory)
+        for item in player.inventory:
+            print("in for loop")
+            json = {"name": item}
+            print(json)
+            r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+            time.sleep(r1['cooldown'])
+            json['confirm'] = "yes"
+            r1_conf = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+            print(r1_conf)
+            time.sleep(r1_conf['cooldown'])
+    
+    
+    
+    
 if __name__ == '__main__':
-    player = Player()
     running = True
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
         "buildMap": {"call": explore_maze, "arg_count": 0},
-        "travelTo": {"call": travel_to_target, "arg_count": 1},
+        "travelTo": {"call": travel_to_target, "arg_count": 1}, 
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
-        "mine": {"call": player.mine, "arg_count": 0},
+        "mine": {"call": player.get_coin, "arg_count": 0},
+        "sellLoot":{"call": sell_loot, "arg_count": 0},
     }
 
     while running:
@@ -129,8 +149,9 @@ if __name__ == '__main__':
 
         else:
             if command_list[cmd]["arg_count"] == 1:
-                command_list[cmd]['call'](
-                    " ".join(args) if len(args) > 1 else args[0])
+                command_list[cmd]['call'](" ".join(args) if len(args) > 1 else args[0])
+            elif command_list[cmd]["arg_count"] == 0:
+                command_list[cmd]['call']()
 
         # command_list[cmd]()
     # player.travel('n')
