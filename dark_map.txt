@@ -1,0 +1,1 @@
+{"room_id": 501, "title": "Darkness", "description": "You are standing on grass and surrounded by darkness.", "coordinates": "(59,60)", "elevation": 0, "terrain": "NORMAL", "items": [], "exits": ["e"], "cooldown": 1.0, "errors": [], "messages": []}

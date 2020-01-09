@@ -229,10 +229,16 @@ def get_rich():
         player.check_balance()
 
 
-def get_leaderboard(self):
+def get_leaderboard():
     time.sleep(player.cooldown)
     travel_to_target(486)
     player.examine('BOOK')
+
+
+def transmogrify(item):
+    time.sleep(player.cooldown)
+    travel_to_target(495)
+    player.transform_coin(item)
 
 
 if __name__ == '__main__':
@@ -255,7 +261,8 @@ if __name__ == '__main__':
         "getRich": {"call": get_rich, "arg_count": 0},
         "getPowers": {"call": acquire_powers, "arg_count": 0},
         "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
-        "transmogrify": {"call": player.transform_coin, "arg_count": 1},
+        "transmogrify": {"call": transmogrify, "arg_count": 1},
+        "warp": {"call": player.warp, "arg_count": 0}
     }
 
     while running:
