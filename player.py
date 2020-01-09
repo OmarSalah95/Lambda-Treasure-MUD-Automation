@@ -50,7 +50,7 @@ class Player:
         data = r.json()
         if 'players' in data:
             del data['players']
-
+        # print(data)
         return data
 
     def check_self(self):
@@ -124,16 +124,19 @@ class Player:
             self.get_coin()
 
     def pick_up_loot(self, item):
-        time.sleep(self.cooldown)
-        json = {"name": item}
-        req = requests.post(f"{url}/api/adv/take/", headers={
-            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        time.sleep(req['cooldown'])
-        self.check_self()
-        if "carry" in self.abilities:
-            req = requests.post(f"{url}/api/adv/carry/", headers={
+        if self.encumbrance < self.strength:
+            time.sleep(self.cooldown)
+            json = {"name": item}
+            req = requests.post(f"{url}/api/adv/take/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-            print(req)
+            time.sleep(req['cooldown'])
+            self.check_self()
+            if "carry" in self.abilities:
+                req = requests.post(f"{url}/api/adv/carry/", headers={
+                    'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+                print(self.inventory)
+        else:
+            print("Your Bag is full!")
     def drop_loot(self, item):
         time.sleep(self.cooldown)
         json = {"name": item}
@@ -192,6 +195,16 @@ class Player:
         print(req)
         time.sleep(req['cooldown'])
         self.check_self()
+        
+    def wear(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/wear/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+
+        self.cooldown = req['cooldown']
+        time.sleep(self.cooldown)
+        self.check_self()
 
     def check_balance(self):
         time.sleep(self.cooldown)
@@ -202,9 +215,13 @@ class Player:
         print(f"\n{req['messages'][0]}\n")
         
     def transform_coin(self, item):
+        time.sleep(self.cooldown)
         self.check_balance()
         json = {"name": item}
         if self.coins > 0 and item in self.inventory:
+            time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/transmogrify/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
             print(req)
             self.cooldown = req['cooldown']
+            for item in req['items']:
+                self.pick_up_loot(item)

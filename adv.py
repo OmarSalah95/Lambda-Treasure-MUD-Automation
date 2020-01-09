@@ -218,6 +218,7 @@ if __name__ == '__main__':
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
         "pray": {"call": player.pray, "arg_count": 0},
+        "wear": {"call": player.wear, "arg_count": 1},
         "checkSelf": {"call": player.check_self, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
