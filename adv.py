@@ -97,27 +97,29 @@ def generate_path(target):
     """
     # Create an empty queue and enqueue a PATH to the current room
     q = Queue()
-    q.enqueue([str(player.current_room["room_id"])])
+    q.enqueue([("placeholder direction", str(player.current_room["room_id"]))])
     # Create a Set to store visited rooms
-    v = set()
+    visited = set()
 
     while q.size() > 0:
         p = q.dequeue()
-        last_room = str(p[-1])
-        if last_room not in v:
+        last_room = p[-1]
+        last_room_id = str(last_room[1])
+        if last_room_id not in visited:
             # Check if target among exits (either a "?" or specific ID)
-            if target in list(player.graph[last_room].values()):
-                # >>> IF YES, RETURN PATH (excluding starting room)
-                if target != "?":
-                    p.append(target)
-                return p[1:]
+            for k, v in player.graph[last_room_id].items():
+                if str(v) == str(target):
+                    # >>> IF YES, RETURN PATH (excluding starting room)
+                    if target != "?":
+                        p.append((k, v))
+                    return p[1:]
             # Else mark it as visited
-            v.add(last_room)
+            visited.add(last_room_id)
             # Then add a PATH to its neighbors to the back of the queue
-            for direction in player.graph[last_room]:
-                if player.graph[last_room][direction] != '?':
+            for k, v in player.graph[last_room_id].items():
+                if v != '?':
                     path_copy = p.copy()
-                    path_copy.append(player.graph[last_room][direction])
+                    path_copy.append((k, v))
                     q.enqueue(path_copy)
 
 
@@ -129,13 +131,33 @@ def travel_to_target(target='?'):
     if player.current_room["room_id"] == target:
         return
     bfs_path = generate_path(target)
-    print(f"new path to follow! {bfs_path}")
+    print(f"\nNew path to follow! {bfs_path}\n")
     while bfs_path is not None and len(bfs_path) > 0:
-        next_room = bfs_path.pop(0)
-        current_id = str(player.current_room["room_id"])
-        next_direction = next(
-            (k for k, v in player.graph[current_id].items() if v == next_room), None)
-        player.travel(next_direction)
+        # check if there are consecutive matching directions (dash opportunity)
+
+        if len(bfs_path) > 1 and bfs_path[0][0] == bfs_path[1][0]:
+            print("Power coils in your legs as you prepare to dash!")
+            dash_direction = bfs_path[0][0]
+            dash_room_ids = []
+            for move in bfs_path:
+                # only grab the consecutive same directions, not later in the path list
+                if move[0] == dash_direction:
+                    dash_room_ids.append(str(move[1]))
+                else:
+                    break
+            num_rooms = len(dash_room_ids)
+            string_ids = ",".join(dash_room_ids)
+
+            # if there are, submit dash request
+            player.dash(dash_direction, str(num_rooms), string_ids)
+            # update path to remove dashed rooms
+            bfs_path = bfs_path[num_rooms:]
+        # else, just move
+        else:
+            next_room = bfs_path.pop(0)
+            current_id = str(player.current_room["room_id"])
+            next_direction = next_room[0]
+            player.travel(next_direction)
 
 
 def explore_maze():
@@ -229,19 +251,11 @@ if __name__ == '__main__':
             print("That Command is not part of our command list try again.")
 
         else:
-            try:
-                if command_list[cmd]["arg_count"] == 1:
-                    command_list[cmd]['call'](
-                        " ".join(args) if len(args) > 1 else args[0])
-                elif command_list[cmd]["arg_count"] == 0:
-                    command_list[cmd]['call']()
-            except ConnectionError:
-                print("Connection encountered. Restarting command...")
-                if command_list[cmd]["arg_count"] == 1:
-                    command_list[cmd]['call'](
-                        " ".join(args) if len(args) > 1 else args[0])
-                elif command_list[cmd]["arg_count"] == 0:
-                    command_list[cmd]['call']()
+            if command_list[cmd]["arg_count"] == 1:
+                command_list[cmd]['call'](
+                    " ".join(args) if len(args) > 1 else args[0])
+            elif command_list[cmd]["arg_count"] == 0:
+                command_list[cmd]['call']()
         # command_list[cmd]()
     # player.travel('n')
     # player.travel('s')

@@ -71,6 +71,38 @@ class Player:
         self.errors = data['errors']
         self.messages = data['messages']
 
+    def dash(self, direction, num_rooms, room_ids):
+        if "dash" not in self.abilities:
+            print("Error! You can't dash yet!")
+            return
+        time.sleep(self.cooldown)
+        curr_id = self.current_room['room_id']
+        print("\n===================")
+        print(f"Dashing {direction} from room {curr_id}...")
+
+        json = {"direction": direction,
+                "num_rooms": num_rooms, "next_room_ids": room_ids}
+        r = requests.post(f"{url}/api/adv/dash/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
+        next_room = r.json()
+        if 'players' in next_room:
+            del next_room['players']
+        next_id = next_room['room_id']
+
+        # update map with room info
+        self.map[next_id] = next_room
+        self._write_file('map.txt', self.map)
+
+        # change current room and update cooldown
+        self.current_room = next_room
+        self.cooldown = self.current_room['cooldown']
+
+        for message in next_room['messages']:
+            print(f"{message}")
+
+        print(f"Now the player is in {self.current_room['room_id']}")
+        print("===================\n")
+
     def travel(self, direction, method="move"):
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
