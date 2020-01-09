@@ -8,6 +8,7 @@ from player import Player
 from api import url, key, opposite, Queue
 player = Player()
 
+
 def get_name(name):
 
     # Make list of treasure rooms
@@ -64,8 +65,8 @@ def sell_loot():
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        print(r1_conf)
         time.sleep(r1_conf['cooldown'])
+    player.check_self()
 
 
 def explore_random():
@@ -98,36 +99,29 @@ def generate_path(target):
     """
     # Create an empty queue and enqueue a PATH to the current room
     q = Queue()
-    q.enqueue([str(player.current_room["room_id"])])
+    q.enqueue([("placeholder direction", str(player.current_room["room_id"]))])
     # Create a Set to store visited rooms
-    v = set()
+    visited = set()
 
     while q.size() > 0:
         p = q.dequeue()
-        last_room = str(p[-1])
-        if last_room not in v:
+        last_room = p[-1]
+        last_room_id = str(last_room[1])
+        if last_room_id not in visited:
             # Check if target among exits (either a "?" or specific ID)
-            if target in list(player.graph[last_room].values()):
-                # >>> IF YES, RETURN PATH (excluding starting room)
-                if target != "?":
-                    # final_dir = next(
-                    #     (k for k, v in player.graph[last_room].items() if str(v) == target), '?')
-                    # final_dir ='?'
-
-                    # for d in player.graph[last_room]:
-                    #     if player.graph[last_room][d] is target:
-                    #         final_dir=d
-
-                    p.append(target)
-                    print(p[1:])
-                return p[1:]
+            for k, v in player.graph[last_room_id].items():
+                if str(v) == str(target):
+                    # >>> IF YES, RETURN PATH (excluding starting room)
+                    if target != "?":
+                        p.append((k, v))
+                    return p[1:]
             # Else mark it as visited
-            v.add(last_room)
+            visited.add(last_room_id)
             # Then add a PATH to its neighbors to the back of the queue
-            for direction in player.graph[last_room]:
-                if player.graph[last_room][direction] != '?':
+            for k, v in player.graph[last_room_id].items():
+                if v != '?':
                     path_copy = p.copy()
-                    path_copy.append(player.graph[last_room][direction])
+                    path_copy.append((k, v))
                     q.enqueue(path_copy)
 
 
@@ -139,13 +133,32 @@ def travel_to_target(target='?'):
     if player.current_room["room_id"] == target:
         return
     bfs_path = generate_path(target)
-    print(f"new path to follow! {bfs_path}")
+    print(f"\nNew path to follow! {bfs_path}\n")
     while bfs_path is not None and len(bfs_path) > 0:
-        next_room = bfs_path.pop(0)
-        current_id = str(player.current_room["room_id"])
-        next_direction = next(
-            (k for k, v in player.graph[current_id].items() if v == next_room), None)
-        player.travel(next_direction)
+        # check if there are consecutive matching directions (dash opportunity)
+
+        if len(bfs_path) > 2 and bfs_path[0][0] == bfs_path[1][0] == bfs_path[2][0] and "dash" in player.abilities:
+            print("Power coils in your legs as you prepare to dash!")
+            dash_direction = bfs_path[0][0]
+            dash_room_ids = []
+            for move in bfs_path:
+                # only grab the consecutive same directions, not later in the path list
+                if move[0] == dash_direction:
+                    dash_room_ids.append(str(move[1]))
+                else:
+                    break
+            num_rooms = len(dash_room_ids)
+            string_ids = ",".join(dash_room_ids)
+
+            # if there are, submit dash request
+            player.dash(dash_direction, str(num_rooms), string_ids)
+            # update path to remove dashed rooms
+            bfs_path = bfs_path[num_rooms:]
+        # else, just move
+        else:
+            next_room = bfs_path.pop(0)
+            next_direction = next_room[0]
+            player.travel(next_direction)
 
 
 def explore_maze():
@@ -154,7 +167,9 @@ def explore_maze():
     through DFT until a dead end OR already fully-explored room is found,
     then perform BFS to find shortest path to room with unexplored path and go there.
     """
-    while len(player.graph) < 500:
+    f = 'dark_graph.txt' if player.world is 'dark' else 'graph.txt'
+    graph = open(f).read().rstrip()
+    while '?' in graph:
         dft_for_dead_end()
         travel_to_target()
     print("Map complete!")
@@ -165,24 +180,68 @@ def acquire_powers():
     After maze has been generated, now go to shrines and acquire powers by praying.
     Order of importance is flight -> dash -> everything else if ready.
     """
-    flight_shrine = 22
+    if "fly" not in player.abilities:
+        shrine = 22
+        travel_to_target(shrine)
+        player.pray()
+    if "dash" not in player.abilities:
+        shrine = 461
+        travel_to_target(shrine)
+        player.pray()
+    if "carry" not in player.abilities:
+        shrine = 499
+        travel_to_target(shrine)
+        player.pray()
+    if "warp" not in player.abilities:
+        shrine = 374
+        travel_to_target(shrine)
+        player.pray()
+    print(f"Your Abilities are now: {player.abilities}")
+
 
 def sell_loot():
-        travel_to_target(1)
-        time.sleep(player.cooldown)
-        print(player.inventory)
-        for item in player.inventory:
-            json = {"name": item}
-            r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
-            time.sleep(r1['cooldown'])
-            json['confirm'] = "yes"
-            r1_conf = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
-            print(r1_conf)
-            time.sleep(r1_conf['cooldown'])
-            player.check_self()
-    
-    
-# get_name("Wizard Omar")
+    travel_to_target(1)
+    time.sleep(player.cooldown)
+    print(player.inventory)
+    for item in player.inventory:
+        json = {"name": item}
+        r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
+                                                            "Content-Type": "application/json"}, json=json).json()
+        time.sleep(r1['cooldown'])
+        json['confirm'] = "yes"
+        r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
+                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(r1_conf)
+        time.sleep(r1_conf['cooldown'])
+    player.check_self()
+
+
+def get_rich():
+    while True:
+        if player.encumbrance >= player.strength:
+            sell_loot()
+        # travel to wishing well
+        travel_to_target(55)
+        # examine it to get the new hint
+        new_room = player.examine('WELL')
+        print(f"Next coin can be mined in room {new_room}\n")
+        travel_to_target(int(new_room))
+        player.get_coin()
+        player.check_balance()
+
+
+def get_leaderboard():
+    time.sleep(player.cooldown)
+    travel_to_target(486)
+    player.examine('BOOK')
+
+
+def transmogrify(item):
+    time.sleep(player.cooldown)
+    travel_to_target(495)
+    player.transform_coin(item)
+
+
 if __name__ == '__main__':
     running = True
     command_list = {
@@ -192,10 +251,19 @@ if __name__ == '__main__':
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
+        "pray": {"call": player.pray, "arg_count": 0},
+        "wear": {"call": player.wear, "arg_count": 1},
+        "checkSelf": {"call": player.check_self, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
+        "checkCoins": {"call": player.check_balance, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
+        "getRich": {"call": get_rich, "arg_count": 0},
+        "getPowers": {"call": acquire_powers, "arg_count": 0},
+        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
+        "transmogrify": {"call": transmogrify, "arg_count": 1},
+        "warp": {"call": player.warp, "arg_count": 0}
     }
 
     while running:
@@ -220,7 +288,6 @@ if __name__ == '__main__':
                     " ".join(args) if len(args) > 1 else args[0])
             elif command_list[cmd]["arg_count"] == 0:
                 command_list[cmd]['call']()
-
         # command_list[cmd]()
     # player.travel('n')
     # player.travel('s')
