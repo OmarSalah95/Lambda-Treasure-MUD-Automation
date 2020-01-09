@@ -229,12 +229,19 @@ if __name__ == '__main__':
             print("That Command is not part of our command list try again.")
 
         else:
-            if command_list[cmd]["arg_count"] == 1:
-                command_list[cmd]['call'](
-                    " ".join(args) if len(args) > 1 else args[0])
-            elif command_list[cmd]["arg_count"] == 0:
-                command_list[cmd]['call']()
-
+            try:
+                if command_list[cmd]["arg_count"] == 1:
+                    command_list[cmd]['call'](
+                        " ".join(args) if len(args) > 1 else args[0])
+                elif command_list[cmd]["arg_count"] == 0:
+                    command_list[cmd]['call']()
+            except ConnectionError:
+                print("Connection encountered. Restarting command...")
+                if command_list[cmd]["arg_count"] == 1:
+                    command_list[cmd]['call'](
+                        " ".join(args) if len(args) > 1 else args[0])
+                elif command_list[cmd]["arg_count"] == 0:
+                    command_list[cmd]['call']()
         # command_list[cmd]()
     # player.travel('n')
     # player.travel('s')

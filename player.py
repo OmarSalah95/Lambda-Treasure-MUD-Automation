@@ -75,6 +75,7 @@ class Player:
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
 
+        print("\n===================")
         if "fly" in self.abilities and self.map[str(curr_id)]['elevation'] > 0:
             method = "fly"
             print(f"Flying {direction} from room {curr_id}...")
@@ -111,10 +112,15 @@ class Player:
             # change current room and update cooldown
             self.current_room = next_room
             self.cooldown = self.current_room['cooldown']
-            print(f"Now the player is in {self.current_room['room_id']}\n")
+
+            for message in next_room['messages']:
+                print(f"{message}")
+
+            print(f"Now the player is in {self.current_room['room_id']}")
             if len(self.graph) < 500:
                 print(
-                    f"Total number of rooms explored so far: {len(self.graph)}\n")
+                    f"Total number of rooms explored so far: {len(self.graph)}")
+        print("===================\n")
 
     def get_coin(self):
         time.sleep(self.cooldown)
