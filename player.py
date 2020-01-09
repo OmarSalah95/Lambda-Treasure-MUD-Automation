@@ -122,7 +122,6 @@ class Player:
         self.cooldown = data['cooldown']
         if len(data['errors']) > 0:
             self.get_coin()
-        
 
     def pick_up_loot(self, item):
         time.sleep(self.cooldown)
@@ -195,8 +194,24 @@ class Player:
         self.check_self()
 
     def check_balance(self):
+        def isfloat(value):
+            try:
+                float(value)
+                return True
+            except ValueError:
+                return False
+        
         time.sleep(self.cooldown)
         req = requests.get(f"{url}/api/bc/get_balance/", headers={
             'Authorization': f"Token {key}"}).json()
+        self.coins = float(req['messages'][0].split(' ')[5])
         self.cooldown = req['cooldown']
         print(f"\n{req['messages'][0]}\n")
+        
+    def transform_coin(self, item):
+        self.check_balance()
+        json = {"name": item}
+        if self.coins > 0 and item in self.inventory:
+            req = requests.post(f"{url}/api/adv/transmogrify/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+            print(req)
+            self.cooldown = req['cooldown']

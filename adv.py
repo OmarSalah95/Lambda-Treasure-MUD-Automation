@@ -218,12 +218,15 @@ if __name__ == '__main__':
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
         "pray": {"call": player.pray, "arg_count": 0},
+        "checkSelf": {"call": player.check_self, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
+        "checkCoins": {"call": player.check_balance, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
         "getRich": {"call": get_rich, "arg_count": 0},
-        "getPowers": {"call": acquire_powers, "arg_count": 0}
+        "getPowers": {"call": acquire_powers, "arg_count": 0},
+        "transmogrify": {"call": player.transform_coin, "arg_count": 1},
     }
 
     while running:
