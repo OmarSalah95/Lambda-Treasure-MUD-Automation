@@ -155,7 +155,14 @@ def acquire_powers():
     After maze has been generated, now go to shrines and acquire powers by praying.
     Order of importance is flight -> dash -> everything else if ready.
     """
-    flight_shrine = 22
+    if "fly" not in player.abilities:
+        flight_shrine = 22
+        travel_to_target(flight_shrine)
+        player.pray()
+    if "dash" not in player.abilities:
+        dash_shrine = 461
+        travel_to_target(dash_shrine)
+        player.pray()
 
 
 def sell_loot():
@@ -201,7 +208,8 @@ if __name__ == '__main__':
         "roomDeets": {"call": player.check_room, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
-        "getRich": {"call": get_rich, "arg_count": 0}
+        "getRich": {"call": get_rich, "arg_count": 0},
+        "getPowers": {"call": acquire_powers, "arg_count": 0}
     }
 
     while running:

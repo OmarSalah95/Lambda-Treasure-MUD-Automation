@@ -20,10 +20,12 @@ class Player:
         self.gold = data['gold']
         self.bodywear = data['bodywear']
         self.footwear = data['footwear']
-        self.inventory = []
-        self.status = []
-        self.errors = []
-        self.messages = []
+        self.inventory = data['inventory']
+        self.abilities = data['abilities']
+        self.status = data['status']
+        self.has_mined = data['has_mined']
+        self.errors = data['errors']
+        self.messages = data['messages']
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
         self.current_room = self.check_room()
@@ -63,14 +65,21 @@ class Player:
         self.bodywear = data['bodywear']
         self.footwear = data['footwear']
         self.inventory = data['inventory']
+        self.abilities = data['abilities']
         self.status = data['status']
+        self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
 
-    def travel(self, direction, method="walk"):
+    def travel(self, direction, method="move"):
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
-        print(f"{method}ing {direction} from room {curr_id}...")
+
+        if "fly" in self.abilities and self.map[str(curr_id)]['elevation'] > 0:
+            method = "fly"
+            print(f"Flying {direction} from room {curr_id}...")
+        else:
+            print(f"Walking {direction} from room {curr_id}...")
 
         if direction not in self.graph[str(curr_id)]:
             print("Error! Not a valid direction from the current room")
@@ -78,7 +87,7 @@ class Player:
             json = {"direction": direction}
             if self.graph[str(curr_id)][direction] != "?":
                 json['next_room_id'] = str(self.graph[str(curr_id)][direction])
-            r = requests.post(f"{url}/api/adv/move/", headers={
+            r = requests.post(f"{url}/api/adv/{method}/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
             next_room = r.json()
             if 'players' in next_room:
@@ -173,8 +182,8 @@ class Player:
 
     def pray(self):
         time.sleep(self.cooldown)
-        req = requests.post(f"{url}/api/adv/examine/", headers={
-            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        req = requests.post(f"{url}/api/adv/pray/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}).json()
         print(req)
         time.sleep(req['cooldown'])
         self.check_self()
