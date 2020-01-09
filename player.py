@@ -135,9 +135,10 @@ class Player:
             if "carry" in self.abilities:
                 req = requests.post(f"{url}/api/adv/carry/", headers={
                     'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-                print(self.inventory)
+                print(req["messages"])
             else: 
                 print("Your Bag is full!")
+
     def drop_loot(self, item):
         time.sleep(self.cooldown)
         json = {"name": item}
