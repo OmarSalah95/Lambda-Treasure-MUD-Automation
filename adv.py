@@ -64,8 +64,8 @@ def sell_loot():
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        print(r1_conf)
         time.sleep(r1_conf['cooldown'])
+    player.check_self()
 
 
 def explore_random():
@@ -198,6 +198,8 @@ def sell_loot():
 
 def get_rich():
     while True:
+        if player.encumbrance >= player.strength:
+            sell_loot()
         # travel to wishing well
         travel_to_target(55)
         # examine it to get the new hint

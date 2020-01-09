@@ -89,7 +89,8 @@ class Player:
                 json['next_room_id'] = str(self.graph[str(curr_id)][direction])
             next_room = requests.post(f"{url}/api/adv/{method}/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-            print(next_room['items'])
+            
+            # Code for looting any items in the room if the space is available
             if len(next_room['items']) > 0 and self.encumbrance < self.strength:
                 for item in next_room['items']:
                     time.sleep(next_room['cooldown'])
