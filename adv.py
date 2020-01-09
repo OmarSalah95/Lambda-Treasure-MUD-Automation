@@ -242,6 +242,11 @@ def transmogrify(item):
     player.transform_coin(item)
 
 
+for room in player.map:
+    if player.map[room]['title'] != 'Darkness':
+        with open("dark_poi.txt", "a") as f:
+            f.write(f"{player.map[room]}\n")
+
 if __name__ == '__main__':
     running = True
     command_list = {

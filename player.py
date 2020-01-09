@@ -235,14 +235,14 @@ class Player:
         json = {"name": item}
         req = requests.post(f"{url}/api/adv/examine/", headers={
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        self.cooldown = req['cooldown']
 
         if item == "WELL":  # Examining well gives binary code to be deciphered for next coin location
             if os.path.exists("hint.txt"):
                 os.remove("hint.txt")
             desc = req['description']
             instructions = desc.split('\n')
-            for line in instructions[117:]:
-                # All commands before index 117 will just print "Mine your coin in room " before the number
+            for line in instructions[2:]:
                 with open("hint.txt", "a") as f:
                     f.write(f"{line}\n")
 
@@ -252,8 +252,11 @@ class Player:
             # clean up after itself and remove the hint file after used (new one will be made for future hints anyway)
             if os.path.exists("hint.txt"):
                 os.remove("hint.txt")
+            # full message for light is "Mine your coin in room ###"
+            # but message for dark well is "Find your snitch in room ###"
+            limiter = 23 if self.world == 'light' else 24
 
-            return cpu.hint
+            return cpu.hint[limiter:]
         else:
             print(req['description'])
 
