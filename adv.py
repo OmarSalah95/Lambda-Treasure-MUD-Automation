@@ -135,7 +135,7 @@ def travel_to_target(target='?'):
     while bfs_path is not None and len(bfs_path) > 0:
         # check if there are consecutive matching directions (dash opportunity)
 
-        if len(bfs_path) > 1 and bfs_path[0][0] == bfs_path[1][0]:
+        if len(bfs_path) > 1 and bfs_path[0][0] == bfs_path[1][0] and "dash" in player.abilities:
             print("Power coils in your legs as you prepare to dash!")
             dash_direction = bfs_path[0][0]
             dash_room_ids = []
