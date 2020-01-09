@@ -157,7 +157,6 @@ def travel_to_target(target='?'):
         # else, just move
         else:
             next_room = bfs_path.pop(0)
-            current_id = str(player.current_room["room_id"])
             next_direction = next_room[0]
             player.travel(next_direction)
 
@@ -168,7 +167,9 @@ def explore_maze():
     through DFT until a dead end OR already fully-explored room is found,
     then perform BFS to find shortest path to room with unexplored path and go there.
     """
-    while len(player.graph) < 500:
+    f = 'dark_graph.txt' if player.world is 'dark' else 'graph.txt'
+    graph = open(f).read().rstrip()
+    while '?' in graph:
         dft_for_dead_end()
         travel_to_target()
     print("Map complete!")

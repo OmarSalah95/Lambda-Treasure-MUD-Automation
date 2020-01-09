@@ -44,14 +44,15 @@ class Player:
             if 'graph' in filepath:
                 room = {room['room_id']: {d: '?' for d in room['exits']}}
 
-            self._write_file(filepath, room)
+            self._write_file(filepath, {self.current_room['room_id']: room})
 
-        else:
-            with open(filepath, 'w+') as f:
-                data = json.load(f)
-                return data
+        with open(filepath, 'r') as f:
+            data = json.load(f)
+            return data
 
     def _write_file(self, filepath, data):
+        if self.world == 'dark' and 'dark' not in filepath:
+            filepath = 'dark_' + filepath
         with open(filepath, 'w+') as outfile:
             json.dump(data, outfile)
 
@@ -121,7 +122,7 @@ class Player:
         curr_id = self.current_room['room_id']
 
         print("\n===================")
-        if "fly" in self.abilities and self.map[str(curr_id)]['elevation'] > 0:
+        if "fly" in self.abilities and self.world != 'dark' and self.map[str(curr_id)]['elevation'] > 0:
             method = "fly"
             print(f"Flying {direction} from room {curr_id}...")
         else:
@@ -137,7 +138,7 @@ class Player:
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
 
             # Code for looting any items in the room if the space is available
-            if len(next_room['items']) > 0 and self.encumbrance <= self.strength:
+            if len(next_room['items']) > 0 and self.encumbrance < self.strength:
                 for item in next_room['items']:
                     time.sleep(next_room['cooldown'])
                     self.pick_up_loot(item)
@@ -188,9 +189,9 @@ class Player:
             time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/take/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+            print(req)
             self.cooldown = req['cooldown']
             time.sleep(self.cooldown)
-            self.check_self()
         else:
             if "carry" in self.abilities:
                 if len(self.status) != 0:
