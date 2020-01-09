@@ -157,13 +157,25 @@ def acquire_powers():
     Order of importance is flight -> dash -> everything else if ready.
     """
     if "fly" not in player.abilities:
-        flight_shrine = 22
-        travel_to_target(flight_shrine)
+        shrine = 22
+        travel_to_target(shrine)
         player.pray()
     if "dash" not in player.abilities:
-        dash_shrine = 461
-        travel_to_target(dash_shrine)
+        shrine = 461
+        travel_to_target(shrine)
         player.pray()
+    if "carry" not in player.abilities:
+        shrine = 499
+        travel_to_target(shrine)
+        player.pray()
+    if "warp" not in player.abilities:
+        shrine = 374
+        travel_to_target(shrine)
+        player.pray()
+    # if "dash" not in player.abilities:
+    #     dash_shrine = 486
+    #     travel_to_target(dash_shrine)
+    #     player.pray()
 
 
 def sell_loot():
@@ -204,6 +216,7 @@ if __name__ == '__main__':
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
+        "pray": {"call": player.pray, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
