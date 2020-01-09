@@ -111,6 +111,9 @@ class Player:
         time.sleep(self.cooldown)
         data = mine()
         self.cooldown = data['cooldown']
+        if data['messages'][0] != 'New Block Forged':
+            self.get_coin()
+        
 
     def pick_up_loot(self, item):
         time.sleep(self.cooldown)

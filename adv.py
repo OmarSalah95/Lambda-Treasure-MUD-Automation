@@ -200,10 +200,7 @@ if __name__ == '__main__':
         "roomDeets": {"call": player.check_room, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
-<<<<<<< HEAD
-=======
         "getRich": {"call": get_rich, "arg_count": 0}
->>>>>>> ee4f07e99e813d52a8bc6dc4c28b0007e5fab865
     }
 
     while running:
