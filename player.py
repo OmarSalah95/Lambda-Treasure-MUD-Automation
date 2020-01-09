@@ -87,14 +87,14 @@ class Player:
             json = {"direction": direction}
             if self.graph[str(curr_id)][direction] != "?":
                 json['next_room_id'] = str(self.graph[str(curr_id)][direction])
-            r = requests.post(f"{url}/api/adv/{method}/", headers={
-                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
-            # print(r.json())
-            if len(r.json()['items']) > 0:
-                for item in r.json()['items']:
+            next_room = requests.post(f"{url}/api/adv/{method}/", headers={
+                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+            print(next_room['items'])
+            if len(next_room['items']) > 0 and self.encumbrance < self.strength:
+                for item in next_room['items']:
+                    time.sleep(next_room['cooldown'])
                     self.pick_up_loot(item)
                     
-            next_room = r.json()
             if 'players' in next_room:
                 del next_room['players']
             next_id = next_room['room_id']
@@ -130,19 +130,23 @@ class Player:
 
     def pick_up_loot(self, item):
         print(f"Looting {item}")
+        json = {"name": item}
         if self.encumbrance < self.strength:
             time.sleep(self.cooldown)
-            json = {"name": item}
             req = requests.post(f"{url}/api/adv/take/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-            time.sleep(req['cooldown'])
+            self.cooldown = req['cooldown']
+            time.sleep(self.cooldown)
             self.check_self()
         else:
             if "carry" in self.abilities:
-                req = requests.post(f"{url}/api/adv/carry/", headers={
-                    'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-                self.cooldown = req['cooldown']
-                print(req["messages"])
+                if len(self.status) != 0:
+                    print("It seems your Bag is full and Glasowyn is already carring something!")
+                else:
+                    req = requests.post(f"{url}/api/adv/carry/", headers={
+                        'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+                    self.cooldown = req['cooldown']
+                    print(req)
             else: 
                 print("Your Bag is full!")
 
