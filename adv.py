@@ -110,16 +110,7 @@ def generate_path(target):
             if target in list(player.graph[last_room].values()):
                 # >>> IF YES, RETURN PATH (excluding starting room)
                 if target != "?":
-                    # final_dir = next(
-                    #     (k for k, v in player.graph[last_room].items() if str(v) == target), '?')
-                    # final_dir ='?'
-
-                    # for d in player.graph[last_room]:
-                    #     if player.graph[last_room][d] is target:
-                    #         final_dir=d
-
                     p.append(target)
-                    print(p[1:])
                 return p[1:]
             # Else mark it as visited
             v.add(last_room)
@@ -168,21 +159,34 @@ def acquire_powers():
     flight_shrine = 22
 
 def sell_loot():
-        travel_to_target(1)
-        time.sleep(player.cooldown)
-        print(player.inventory)
-        for item in player.inventory:
-            json = {"name": item}
-            r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
-            time.sleep(r1['cooldown'])
-            json['confirm'] = "yes"
-            r1_conf = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
-            print(r1_conf)
-            time.sleep(r1_conf['cooldown'])
-            player.check_self()
-    
-    
-# get_name("Wizard Omar")
+    travel_to_target(1)
+    time.sleep(player.cooldown)
+    print(player.inventory)
+    for item in player.inventory:
+        json = {"name": item}
+        r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
+                                                            "Content-Type": "application/json"}, json=json).json()
+        time.sleep(r1['cooldown'])
+        json['confirm'] = "yes"
+        r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
+                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(r1_conf)
+        time.sleep(r1_conf['cooldown'])
+        player.check_self()
+
+
+def get_rich():
+    while True:
+        # travel to wishing well
+        travel_to_target(55)
+        # examine it to get the new hint
+        new_room = player.examine('WELL')
+        print(f"Next coin can be mined in room {new_room}\n")
+        travel_to_target(int(new_room))
+        player.get_coin()
+        player.check_balance()
+
+
 if __name__ == '__main__':
     running = True
     command_list = {
@@ -196,6 +200,10 @@ if __name__ == '__main__':
         "roomDeets": {"call": player.check_room, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
+<<<<<<< HEAD
+=======
+        "getRich": {"call": get_rich, "arg_count": 0}
+>>>>>>> ee4f07e99e813d52a8bc6dc4c28b0007e5fab865
     }
 
     while running:
