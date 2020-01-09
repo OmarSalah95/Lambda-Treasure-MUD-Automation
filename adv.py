@@ -217,6 +217,7 @@ def sell_loot():
 
 
 def get_rich():
+    print(f"{player.name} currently has {player.snitches} snitches!")
     while True:
         if player.encumbrance >= player.strength:
             sell_loot()

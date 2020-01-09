@@ -105,9 +105,6 @@ class Player:
             del next_room['players']
         next_id = next_room['room_id']
 
-        if self.world == 'dark' and 'golden snitch' in next_room['items']:
-            self.pick_up_loot('golden snitch')
-
         # update map with room info
         self.map[next_id] = next_room
         self._write_file('map.txt', self.map)
@@ -115,6 +112,9 @@ class Player:
         # change current room and update cooldown
         self.current_room = next_room
         self.cooldown = self.current_room['cooldown']
+
+        if self.world == 'dark' and 'golden snitch' in next_room['items']:
+            self.pick_up_loot('golden snitch')
 
         for message in next_room['messages']:
             print(f"{message}")
