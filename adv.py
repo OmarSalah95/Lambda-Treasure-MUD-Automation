@@ -224,14 +224,24 @@ def get_rich():
         travel_to_target(55 if player.world == 'light' else 555)
         # examine it to get the new hint
         new_room = player.examine('WELL')
+        if player.world == 'dark':
+            print('Waiting for new snitch location...')
+            head_start = player.examine('WELL')
+            while head_start == new_room:
+                head_start = player.examine('WELL')
+            new_room = head_start
+
         print(
             f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
         travel_to_target(int(new_room))
         if player.world == 'light':
             player.get_coin()
+            player.check_balance()
         else:
-            player.pick_up_loot('golden snitch')
-        player.check_balance()
+            # player automatically loots a golden snitch anytime they come across it, either
+            # from move or dash
+            time.sleep(player.cooldown)
+            player.check_self()
 
 
 def get_leaderboard():

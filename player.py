@@ -25,8 +25,10 @@ class Player:
         self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
+        self.snitches = data['snitches'] if data['snitches'] else 0
         self.current_room = self.check_room()
         self.world = "dark" if self.current_room['room_id'] > 499 else "light"
+        self.snitch_location = None
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
 
@@ -81,6 +83,7 @@ class Player:
         self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
+        self.snitches = data['snitches'] if data['snitches'] else 0
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
 
@@ -101,6 +104,9 @@ class Player:
         if 'players' in next_room:
             del next_room['players']
         next_id = next_room['room_id']
+
+        if self.world == 'dark' and 'golden snitch' in next_room['items']:
+            self.pick_up_loot('golden snitch')
 
         # update map with room info
         self.map[next_id] = next_room
@@ -258,7 +264,7 @@ class Player:
             # full message for light is "Mine your coin in room ###"
             # but message for dark well is "Find your snitch in room ###"
             limiter = 23 if self.world == 'light' else 24
-            print(cpu.hint[limiter:])
+            # print(cpu.hint[limiter:])
             return cpu.hint[limiter:]
         else:
             print(req['description'])
