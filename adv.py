@@ -156,9 +156,15 @@ def acquire_powers():
     After maze has been generated, now go to shrines and acquire powers by praying.
     Order of importance is flight -> dash -> everything else if ready.
     """
-    flight_shrine = 22
-    travel_to_target(flight_shrine)
-    player.pray()
+    # Flight 22
+    # ? 374
+    # Dash  461
+    # ? 486
+    # Ghost Companion 499
+    shrine_rooms = [22, 461, 499, 374]
+    for target in shrine_rooms:
+        travel_to_target(target)
+        player.pray()
     
 def sell_loot():
     travel_to_target(1)
