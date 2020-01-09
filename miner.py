@@ -1,12 +1,9 @@
 from api import url, key
-import hashlib
-import requests
-import sys
+
+import requests, sys, random, hashlib, json, time
+
 from uuid import uuid4
 from timeit import default_timer as timer
-import random
-import json
-import time
 
 
 def mine():

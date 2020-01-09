@@ -20,10 +20,12 @@ class Player:
         self.gold = data['gold']
         self.bodywear = data['bodywear']
         self.footwear = data['footwear']
-        self.inventory = []
-        self.status = []
-        self.errors = []
-        self.messages = []
+        self.inventory = data['inventory']
+        self.abilities = data['abilities']
+        self.status = data['status']
+        self.has_mined = data['has_mined']
+        self.errors = data['errors']
+        self.messages = data['messages']
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
         self.current_room = self.check_room()
@@ -48,7 +50,7 @@ class Player:
         data = r.json()
         if 'players' in data:
             del data['players']
-
+        # print(data)
         return data
 
     def check_self(self):
@@ -63,14 +65,55 @@ class Player:
         self.bodywear = data['bodywear']
         self.footwear = data['footwear']
         self.inventory = data['inventory']
+        self.abilities = data['abilities']
         self.status = data['status']
+        self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
 
-    def travel(self, direction, method="walk"):
+    def dash(self, direction, num_rooms, room_ids):
+        if "dash" not in self.abilities:
+            print("Error! You can't dash yet!")
+            return
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
-        print(f"{method}ing {direction} from room {curr_id}...")
+        print("\n===================")
+        print(f"Dashing {direction} from room {curr_id}...")
+
+        json = {"direction": direction,
+                "num_rooms": num_rooms, "next_room_ids": room_ids}
+        r = requests.post(f"{url}/api/adv/dash/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
+        next_room = r.json()
+        if 'players' in next_room:
+            del next_room['players']
+        next_id = next_room['room_id']
+
+        # update map with room info
+        self.map[next_id] = next_room
+        self._write_file('map.txt', self.map)
+
+        # change current room and update cooldown
+        self.current_room = next_room
+        self.cooldown = self.current_room['cooldown']
+
+        for message in next_room['messages']:
+            print(f"{message}")
+
+        print(f"Now the player is in {self.current_room['room_id']}")
+        print(f"Cooldown for dashing this time was {self.cooldown}")
+        print("===================\n")
+
+    def travel(self, direction, method="move"):
+        time.sleep(self.cooldown)
+        curr_id = self.current_room['room_id']
+
+        print("\n===================")
+        if "fly" in self.abilities and self.map[str(curr_id)]['elevation'] > 0:
+            method = "fly"
+            print(f"Flying {direction} from room {curr_id}...")
+        else:
+            print(f"Walking {direction} from room {curr_id}...")
 
         if direction not in self.graph[str(curr_id)]:
             print("Error! Not a valid direction from the current room")
@@ -78,9 +121,15 @@ class Player:
             json = {"direction": direction}
             if self.graph[str(curr_id)][direction] != "?":
                 json['next_room_id'] = str(self.graph[str(curr_id)][direction])
-            r = requests.post(f"{url}/api/adv/move/", headers={
-                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
-            next_room = r.json()
+            next_room = requests.post(f"{url}/api/adv/{method}/", headers={
+                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+            
+            # Code for looting any items in the room if the space is available
+            if len(next_room['items']) > 0 and self.encumbrance < self.strength:
+                for item in next_room['items']:
+                    time.sleep(next_room['cooldown'])
+                    self.pick_up_loot(item)
+                    
             if 'players' in next_room:
                 del next_room['players']
             next_id = next_room['room_id']
@@ -102,23 +151,45 @@ class Player:
             # change current room and update cooldown
             self.current_room = next_room
             self.cooldown = self.current_room['cooldown']
-            print(f"Now the player is in {self.current_room['room_id']}\n")
+
+            for message in next_room['messages']:
+                print(f"{message}")
+
+            print(f"Now the player is in {self.current_room['room_id']}")
+            print(f"Cooldown for moving this time was {self.cooldown}")
             if len(self.graph) < 500:
                 print(
-                    f"Total number of rooms explored so far: {len(self.graph)}\n")
+                    f"Total number of rooms explored so far: {len(self.graph)}")
+        print("===================\n")
 
     def get_coin(self):
         time.sleep(self.cooldown)
         data = mine()
         self.cooldown = data['cooldown']
+        if len(data['errors']) > 0:
+            self.get_coin()
 
     def pick_up_loot(self, item):
-        time.sleep(self.cooldown)
+        print(f"Looting {item}")
         json = {"name": item}
-        req = requests.post(f"{url}/api/adv/take/", headers={
-            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        time.sleep(req['cooldown'])
-        self.check_self()
+        if self.encumbrance < self.strength:
+            time.sleep(self.cooldown)
+            req = requests.post(f"{url}/api/adv/take/", headers={
+                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+            self.cooldown = req['cooldown']
+            time.sleep(self.cooldown)
+            self.check_self()
+        else:
+            if "carry" in self.abilities:
+                if len(self.status) != 0:
+                    print("It seems your Bag is full and Glasowyn is already carring something!")
+                else:
+                    req = requests.post(f"{url}/api/adv/carry/", headers={
+                        'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+                    self.cooldown = req['cooldown']
+                    print(req)
+            else: 
+                print("Your Bag is full!")
 
     def drop_loot(self, item):
         time.sleep(self.cooldown)
@@ -169,19 +240,42 @@ class Player:
 
             return cpu.hint
         else:
-            print(req)
+            print(req['description'])
 
     def pray(self):
         time.sleep(self.cooldown)
-        req = requests.post(f"{url}/api/adv/examine/", headers={
-            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        req = requests.post(f"{url}/api/adv/pray/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}).json()
         print(req)
         time.sleep(req['cooldown'])
+        self.check_self()
+        
+    def wear(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/wear/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+
+        self.cooldown = req['cooldown']
+        time.sleep(self.cooldown)
         self.check_self()
 
     def check_balance(self):
         time.sleep(self.cooldown)
         req = requests.get(f"{url}/api/bc/get_balance/", headers={
             'Authorization': f"Token {key}"}).json()
+        self.coins = float(req['messages'][0].split(' ')[5])
         self.cooldown = req['cooldown']
         print(f"\n{req['messages'][0]}\n")
+        
+    def transform_coin(self, item):
+        time.sleep(self.cooldown)
+        self.check_balance()
+        json = {"name": item}
+        if self.coins > 0 and item in self.inventory:
+            time.sleep(self.cooldown)
+            req = requests.post(f"{url}/api/adv/transmogrify/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+            print(req)
+            self.cooldown = req['cooldown']
+            for item in req['items']:
+                self.pick_up_loot(item)
