@@ -24,6 +24,7 @@ class Player:
         self.status = []
         self.errors = []
         self.messages = []
+        self.abilities = []
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
         self.current_room = self.check_room()
@@ -66,7 +67,8 @@ class Player:
         self.status = data['status']
         self.errors = data['errors']
         self.messages = data['messages']
-
+        self.abilities = data['abilities']
+        
     def travel(self, direction, method="walk"):
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
@@ -111,7 +113,7 @@ class Player:
         time.sleep(self.cooldown)
         data = mine()
         self.cooldown = data['cooldown']
-        if data['messages'][0] != 'New Block Forged':
+        if len(data['errors']) > 0:
             self.get_coin()
         
 
@@ -176,8 +178,8 @@ class Player:
 
     def pray(self):
         time.sleep(self.cooldown)
-        req = requests.post(f"{url}/api/adv/examine/", headers={
-            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        req = requests.post(f"{url}/api/adv/pray/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}).json()
         print(req)
         time.sleep(req['cooldown'])
         self.check_self()
