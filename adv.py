@@ -8,6 +8,7 @@ from player import Player
 from api import url, key, opposite, Queue
 player = Player()
 
+
 def get_name(name):
 
     # Make list of treasure rooms
@@ -193,7 +194,7 @@ def sell_loot():
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         print(r1_conf)
         time.sleep(r1_conf['cooldown'])
-        player.check_self()
+    player.check_self()
 
 
 def get_rich():
