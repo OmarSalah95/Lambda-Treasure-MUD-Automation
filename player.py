@@ -137,11 +137,12 @@ class Player:
             next_room = requests.post(f"{url}/api/adv/{method}/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
 
-            # Code for looting any items in the room if the space is available
-            if len(next_room['items']) > 0 and self.encumbrance < self.strength:
-                for item in next_room['items']:
-                    time.sleep(next_room['cooldown'])
-                    self.pick_up_loot(item)
+            if self.world != 'dark':
+                # Code for looting any items in the room if the space is available
+                if len(next_room['items']) > 0 and self.encumbrance < self.strength:
+                    for item in next_room['items']:
+                        time.sleep(next_room['cooldown'])
+                        self.pick_up_loot(item)
 
             if 'players' in next_room:
                 del next_room['players']
@@ -306,5 +307,18 @@ class Player:
                 self.world = 'dark'
             else:
                 self.world = 'light'
+            self.current_room = req
+            time.sleep(self.cooldown)
+            self.check_self()
+
+            if req['room_id'] not in self.graph:
+                # Just warped to a previously unknown room, add it to graph and map
+                g = self.graph
+                g[req['room_id']] = {d: '?' for d in req['exits']}
+                self._write_file('graph.txt', g)
+
+                m = self.map
+                m[req['room_id']] = req
+                self._write_file('map.txt', m)
         else:
             print("You do not have the warp ability yet!")
