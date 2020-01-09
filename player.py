@@ -89,6 +89,11 @@ class Player:
                 json['next_room_id'] = str(self.graph[str(curr_id)][direction])
             r = requests.post(f"{url}/api/adv/{method}/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
+            # print(r.json())
+            if len(r.json()['items']) > 0:
+                for item in r.json()['items']:
+                    self.pick_up_loot(item)
+                    
             next_room = r.json()
             if 'players' in next_room:
                 del next_room['players']
@@ -124,6 +129,7 @@ class Player:
             self.get_coin()
 
     def pick_up_loot(self, item):
+        print(f"Looting {item}")
         if self.encumbrance < self.strength:
             time.sleep(self.cooldown)
             json = {"name": item}
@@ -135,6 +141,7 @@ class Player:
             if "carry" in self.abilities:
                 req = requests.post(f"{url}/api/adv/carry/", headers={
                     'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+                self.cooldown = req['cooldown']
                 print(req["messages"])
             else: 
                 print("Your Bag is full!")
