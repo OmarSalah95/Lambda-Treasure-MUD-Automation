@@ -143,6 +143,9 @@ class Player:
                     for item in next_room['items']:
                         time.sleep(next_room['cooldown'])
                         self.pick_up_loot(item)
+            else:
+                if 'golden snitch' in next_room['items']:
+                    self.pick_up_loot('golden snitch')
 
             if 'players' in next_room:
                 del next_room['players']

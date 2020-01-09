@@ -227,7 +227,10 @@ def get_rich():
         print(
             f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
         travel_to_target(int(new_room))
-        player.get_coin()
+        if player.world == 'light':
+            player.get_coin()
+        else:
+            player.pick_up_loot('golden snitch')
         player.check_balance()
 
 
