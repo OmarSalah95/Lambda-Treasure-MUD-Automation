@@ -156,16 +156,29 @@ def acquire_powers():
     After maze has been generated, now go to shrines and acquire powers by praying.
     Order of importance is flight -> dash -> everything else if ready.
     """
-    # Flight 22
-    # ? 374
-    # Dash  461
-    # ? 486
-    # Ghost Companion 499
-    shrine_rooms = [22, 461, 499, 374]
-    for target in shrine_rooms:
-        travel_to_target(target)
+    if "fly" not in player.abilities:
+        shrine = 22
+        travel_to_target(shrine)
         player.pray()
-    
+    if "dash" not in player.abilities:
+        shrine = 461
+        travel_to_target(shrine)
+        player.pray()
+    if "carry" not in player.abilities:
+        shrine = 499
+        travel_to_target(shrine)
+        player.pray()
+    if "warp" not in player.abilities:
+        shrine = 374
+        travel_to_target(shrine)
+        player.pray()
+    # if "dash" not in player.abilities:
+    #     dash_shrine = 486
+    #     travel_to_target(dash_shrine)
+    #     player.pray()
+    print(f"Your Abilities are now: {player.abilities}")
+
+
 def sell_loot():
     travel_to_target(1)
     time.sleep(player.cooldown)
@@ -204,13 +217,13 @@ if __name__ == '__main__':
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
+        "pray": {"call": player.pray, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
         "getRich": {"call": get_rich, "arg_count": 0},
-        "acquirePowers": {"call": acquire_powers, "arg_count": 0},
-        "checkSelf": {"call": player.check_self, "arg_count": 0},
+        "getPowers": {"call": acquire_powers, "arg_count": 0}
     }
 
     while running:
