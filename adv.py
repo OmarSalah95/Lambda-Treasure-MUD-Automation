@@ -221,10 +221,11 @@ def get_rich():
         if player.encumbrance >= player.strength:
             sell_loot()
         # travel to wishing well
-        travel_to_target(55)
+        travel_to_target(55 if player.world == 'light' else 555)
         # examine it to get the new hint
         new_room = player.examine('WELL')
-        print(f"Next coin can be mined in room {new_room}\n")
+        print(
+            f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
         travel_to_target(int(new_room))
         player.get_coin()
         player.check_balance()
