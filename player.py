@@ -131,12 +131,13 @@ class Player:
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
             time.sleep(req['cooldown'])
             self.check_self()
+        else:
             if "carry" in self.abilities:
                 req = requests.post(f"{url}/api/adv/carry/", headers={
                     'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
                 print(self.inventory)
-        else:
-            print("Your Bag is full!")
+            else: 
+                print("Your Bag is full!")
     def drop_loot(self, item):
         time.sleep(self.cooldown)
         json = {"name": item}
