@@ -176,6 +176,7 @@ def acquire_powers():
     #     dash_shrine = 486
     #     travel_to_target(dash_shrine)
     #     player.pray()
+    print(f"Your Abilities are now: {player.abilities}")
 
 
 def sell_loot():
