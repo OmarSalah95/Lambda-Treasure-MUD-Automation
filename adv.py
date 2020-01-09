@@ -135,7 +135,7 @@ def travel_to_target(target='?'):
     while bfs_path is not None and len(bfs_path) > 0:
         # check if there are consecutive matching directions (dash opportunity)
 
-        if len(bfs_path) > 1 and bfs_path[0][0] == bfs_path[1][0] and "dash" in player.abilities:
+        if len(bfs_path) > 2 and bfs_path[0][0] == bfs_path[1][0] == bfs_path[2][0] and "dash" in player.abilities:
             print("Power coils in your legs as you prepare to dash!")
             dash_direction = bfs_path[0][0]
             dash_room_ids = []
@@ -216,6 +216,12 @@ def get_rich():
         player.check_balance()
 
 
+def get_leaderboard(self):
+    time.sleep(player.cooldown)
+    travel_to_target(486)
+    player.examine('BOOK')
+
+
 if __name__ == '__main__':
     player = Player()
     running = True
@@ -231,7 +237,8 @@ if __name__ == '__main__':
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
         "getRich": {"call": get_rich, "arg_count": 0},
-        "getPowers": {"call": acquire_powers, "arg_count": 0}
+        "getPowers": {"call": acquire_powers, "arg_count": 0},
+        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0}
     }
 
     while running:

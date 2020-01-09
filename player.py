@@ -101,6 +101,7 @@ class Player:
             print(f"{message}")
 
         print(f"Now the player is in {self.current_room['room_id']}")
+        print(f"Cooldown for dashing this time was {self.cooldown}")
         print("===================\n")
 
     def travel(self, direction, method="move"):
@@ -149,6 +150,7 @@ class Player:
                 print(f"{message}")
 
             print(f"Now the player is in {self.current_room['room_id']}")
+            print(f"Cooldown for moving this time was {self.cooldown}")
             if len(self.graph) < 500:
                 print(
                     f"Total number of rooms explored so far: {len(self.graph)}")
@@ -216,7 +218,7 @@ class Player:
 
             return cpu.hint
         else:
-            print(req)
+            print(req['description'])
 
     def pray(self):
         time.sleep(self.cooldown)
