@@ -242,8 +242,6 @@ def transmogrify(item):
     player.transform_coin(item)
 
 
-print(player.current_room)
-
 if __name__ == '__main__':
     running = True
     command_list = {
