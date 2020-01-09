@@ -109,16 +109,7 @@ def generate_path(target):
             if target in list(player.graph[last_room].values()):
                 # >>> IF YES, RETURN PATH (excluding starting room)
                 if target != "?":
-                    # final_dir = next(
-                    #     (k for k, v in player.graph[last_room].items() if str(v) == target), '?')
-                    # final_dir ='?'
-
-                    # for d in player.graph[last_room]:
-                    #     if player.graph[last_room][d] is target:
-                    #         final_dir=d
-
                     p.append(target)
-                    print(p[1:])
                 return p[1:]
             # Else mark it as visited
             v.add(last_room)
@@ -184,6 +175,18 @@ def sell_loot():
         player.check_self()
 
 
+def get_rich():
+    while True:
+        # travel to wishing well
+        travel_to_target(55)
+        # examine it to get the new hint
+        new_room = player.examine('WELL')
+        print(f"Next coin can be mined in room {new_room}\n")
+        travel_to_target(int(new_room))
+        player.get_coin()
+        player.check_balance()
+
+
 if __name__ == '__main__':
     player = Player()
     running = True
@@ -196,7 +199,9 @@ if __name__ == '__main__':
         "mine": {"call": player.get_coin, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
-        "getName": {"call": get_name, "arg_count": 1}
+        "getName": {"call": get_name, "arg_count": 1},
+        "examine": {"call": player.examine, "arg_count": 1},
+        "getRich": {"call": get_rich, "arg_count": 0}
     }
 
     while running:
