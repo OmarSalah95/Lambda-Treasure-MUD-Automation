@@ -50,7 +50,7 @@ class Player:
         data = r.json()
         if 'players' in data:
             del data['players']
-
+        # print(data)
         return data
 
     def check_self(self):
@@ -121,9 +121,15 @@ class Player:
             json = {"direction": direction}
             if self.graph[str(curr_id)][direction] != "?":
                 json['next_room_id'] = str(self.graph[str(curr_id)][direction])
-            r = requests.post(f"{url}/api/adv/{method}/", headers={
-                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json)
-            next_room = r.json()
+            next_room = requests.post(f"{url}/api/adv/{method}/", headers={
+                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+            
+            # Code for looting any items in the room if the space is available
+            if len(next_room['items']) > 0 and self.encumbrance < self.strength:
+                for item in next_room['items']:
+                    time.sleep(next_room['cooldown'])
+                    self.pick_up_loot(item)
+                    
             if 'players' in next_room:
                 del next_room['players']
             next_id = next_room['room_id']
@@ -160,14 +166,30 @@ class Player:
         time.sleep(self.cooldown)
         data = mine()
         self.cooldown = data['cooldown']
+        if len(data['errors']) > 0:
+            self.get_coin()
 
     def pick_up_loot(self, item):
-        time.sleep(self.cooldown)
+        print(f"Looting {item}")
         json = {"name": item}
-        req = requests.post(f"{url}/api/adv/take/", headers={
-            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        time.sleep(req['cooldown'])
-        self.check_self()
+        if self.encumbrance < self.strength:
+            time.sleep(self.cooldown)
+            req = requests.post(f"{url}/api/adv/take/", headers={
+                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+            self.cooldown = req['cooldown']
+            time.sleep(self.cooldown)
+            self.check_self()
+        else:
+            if "carry" in self.abilities:
+                if len(self.status) != 0:
+                    print("It seems your Bag is full and Glasowyn is already carring something!")
+                else:
+                    req = requests.post(f"{url}/api/adv/carry/", headers={
+                        'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+                    self.cooldown = req['cooldown']
+                    print(req)
+            else: 
+                print("Your Bag is full!")
 
     def drop_loot(self, item):
         time.sleep(self.cooldown)
@@ -227,10 +249,33 @@ class Player:
         print(req)
         time.sleep(req['cooldown'])
         self.check_self()
+        
+    def wear(self, item):
+        time.sleep(self.cooldown)
+        json = {"name": item}
+        req = requests.post(f"{url}/api/adv/wear/", headers={
+            'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+
+        self.cooldown = req['cooldown']
+        time.sleep(self.cooldown)
+        self.check_self()
 
     def check_balance(self):
         time.sleep(self.cooldown)
         req = requests.get(f"{url}/api/bc/get_balance/", headers={
             'Authorization': f"Token {key}"}).json()
+        self.coins = float(req['messages'][0].split(' ')[5])
         self.cooldown = req['cooldown']
         print(f"\n{req['messages'][0]}\n")
+        
+    def transform_coin(self, item):
+        time.sleep(self.cooldown)
+        self.check_balance()
+        json = {"name": item}
+        if self.coins > 0 and item in self.inventory:
+            time.sleep(self.cooldown)
+            req = requests.post(f"{url}/api/adv/transmogrify/", headers={'Authorization': f"Token {key}", "Content-Type": "application/json"}, json = json).json()
+            print(req)
+            self.cooldown = req['cooldown']
+            for item in req['items']:
+                self.pick_up_loot(item)

@@ -6,6 +6,7 @@ import time
 from player import Player
 
 from api import url, key, opposite, Queue
+player = Player()
 
 
 def get_name(name):
@@ -15,6 +16,7 @@ def get_name(name):
     for k, v in player.map.items():
         if "tiny treasure" in v["items"]:
             treasure_rooms.append(k)
+    treasure_rooms[len(treasure_rooms)//2:]
     print("The following rooms have treasure:", treasure_rooms)
 
     while player.gold < 1000:  # This is automatically updated, otherwise have to check server
@@ -63,8 +65,8 @@ def sell_loot():
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        print(r1_conf)
         time.sleep(r1_conf['cooldown'])
+    player.check_self()
 
 
 def explore_random():
@@ -178,13 +180,22 @@ def acquire_powers():
     Order of importance is flight -> dash -> everything else if ready.
     """
     if "fly" not in player.abilities:
-        flight_shrine = 22
-        travel_to_target(flight_shrine)
+        shrine = 22
+        travel_to_target(shrine)
         player.pray()
     if "dash" not in player.abilities:
-        dash_shrine = 461
-        travel_to_target(dash_shrine)
+        shrine = 461
+        travel_to_target(shrine)
         player.pray()
+    if "carry" not in player.abilities:
+        shrine = 499
+        travel_to_target(shrine)
+        player.pray()
+    if "warp" not in player.abilities:
+        shrine = 374
+        travel_to_target(shrine)
+        player.pray()
+    print(f"Your Abilities are now: {player.abilities}")
 
 
 def sell_loot():
@@ -201,11 +212,13 @@ def sell_loot():
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
         print(r1_conf)
         time.sleep(r1_conf['cooldown'])
-        player.check_self()
+    player.check_self()
 
 
 def get_rich():
     while True:
+        if player.encumbrance >= player.strength:
+            sell_loot()
         # travel to wishing well
         travel_to_target(55)
         # examine it to get the new hint
@@ -223,7 +236,6 @@ def get_leaderboard(self):
 
 
 if __name__ == '__main__':
-    player = Player()
     running = True
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
@@ -232,13 +244,18 @@ if __name__ == '__main__':
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
         "mine": {"call": player.get_coin, "arg_count": 0},
+        "pray": {"call": player.pray, "arg_count": 0},
+        "wear": {"call": player.wear, "arg_count": 1},
+        "checkSelf": {"call": player.check_self, "arg_count": 0},
         "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
+        "checkCoins": {"call": player.check_balance, "arg_count": 0},
         "getName": {"call": get_name, "arg_count": 1},
         "examine": {"call": player.examine, "arg_count": 1},
         "getRich": {"call": get_rich, "arg_count": 0},
         "getPowers": {"call": acquire_powers, "arg_count": 0},
-        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0}
+        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
+        "transmogrify": {"call": player.transform_coin, "arg_count": 1},
     }
 
     while running:
