@@ -194,13 +194,6 @@ class Player:
         self.check_self()
 
     def check_balance(self):
-        def isfloat(value):
-            try:
-                float(value)
-                return True
-            except ValueError:
-                return False
-        
         time.sleep(self.cooldown)
         req = requests.get(f"{url}/api/bc/get_balance/", headers={
             'Authorization': f"Token {key}"}).json()
