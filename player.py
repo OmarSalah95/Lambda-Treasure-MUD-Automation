@@ -142,6 +142,10 @@ class Player:
             next_room = requests.post(f"{url}/api/adv/{method}/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
 
+            # change current room and update cooldown
+            self.current_room = next_room
+            self.cooldown = self.current_room['cooldown']
+
             if self.world != 'dark':
                 # Code for looting any items in the room if the space is available
                 if len(next_room['items']) > 0 and self.encumbrance < self.strength:
@@ -170,10 +174,6 @@ class Player:
             # update map with room info
             self.map[next_id] = next_room
             self._write_file('map.txt', self.map)
-
-            # change current room and update cooldown
-            self.current_room = next_room
-            self.cooldown = self.current_room['cooldown']
 
             for message in next_room['messages']:
                 print(f"{message}")
