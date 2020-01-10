@@ -264,7 +264,7 @@ class Player:
             # full message for light is "Mine your coin in room ###"
             # but message for dark well is "Find your snitch in room ###"
             limiter = 23 if self.world == 'light' else 24
-            # print(cpu.hint[limiter:])
+            print(cpu.hint[limiter:])
             return cpu.hint[limiter:]
         else:
             print(req['description'])

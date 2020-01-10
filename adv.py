@@ -211,13 +211,17 @@ def sell_loot():
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        print(r1_conf)
-        time.sleep(r1_conf['cooldown'])
+        # print(r1_conf)
+        print(f"Clerk: {r1_conf['messages'][0]}")
+        print(f'{"*"*8} {r1_conf["messages"][1]} {"*"*8}\n')
+        player.cooldown = r1_conf['cooldown']
+        time.sleep(player.cooldown)
     player.check_self()
 
 
 def get_rich():
     print(f"{player.name} currently has {player.snitches} snitches!")
+    player.check_balance()
     while True:
         if player.encumbrance >= player.strength:
             sell_loot()
@@ -228,14 +232,18 @@ def get_rich():
         if player.world == 'dark':
             print('Waiting for new snitch location...')
             head_start = player.examine('WELL')
-            while head_start == new_room:
+            count = 0
+            while head_start == new_room and count < 25:
                 head_start = player.examine('WELL')
+                count+=1
             new_room = head_start
 
         print(
             f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
         travel_to_target(int(new_room))
         if player.world == 'light':
+            if player.encumbrance >= player.strength:
+                sell_loot()
             player.get_coin()
             player.check_balance()
         else:
