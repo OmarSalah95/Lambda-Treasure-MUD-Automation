@@ -57,7 +57,7 @@ def get_name(name):
 
 
 def sell_loot():
-     """
+    """
     Travels to shop and sells all items in inventory.
     """
     travel_to_target(1)
