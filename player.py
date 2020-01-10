@@ -174,6 +174,7 @@ class Player:
 
             # add to graph and map, in addition to making graph connections
             if str(next_id) not in self.graph:
+                print(f"New room! # {next_id}")
                 self.graph[str(next_id)] = {
                     e: '?' for e in next_room['exits']}
 
@@ -328,7 +329,7 @@ class Player:
             time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/warp/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}).json()
-            print(req)
+            print(req['messages'][0])
             self.cooldown = req['cooldown']
             if self.world == 'light':
                 self.world = 'dark'

@@ -4,7 +4,6 @@ import random
 import time
 
 from player import Player
-
 from api import url, key, opposite, Queue
 player = Player()
 
@@ -130,6 +129,7 @@ def travel_to_target(target='?'):
     Runs a BFS to specific room or to nearest room with unexplored exit,
     then moves through that path in order.
     """
+
     if player.current_room["room_id"] == target:
         return
     bfs_path = generate_path(target)
@@ -167,7 +167,7 @@ def explore_maze():
     through DFT until a dead end OR already fully-explored room is found,
     then perform BFS to find shortest path to room with unexplored path and go there.
     """
-    f = 'dark_graph.txt' if player.world is 'dark' else 'graph.txt'
+    f = 'dark_graph.txt' if player.world == 'dark' else 'graph.txt'
     graph = open(f).read().rstrip()
     while '?' in graph:
         dft_for_dead_end()
@@ -223,6 +223,8 @@ def get_rich():
     print(f"{player.name} currently has {player.snitches} snitches!")
     player.check_balance()
     while True:
+        if player.world == 'dark':
+            print(f"\n{player.name} currently has {player.snitches} snitches!")
         if player.encumbrance >= player.strength:
             sell_loot()
         # travel to wishing well
@@ -265,6 +267,29 @@ def transmogrify(item):
     player.transform_coin(item)
 
 
+def print_map():
+    m = player.map
+    g = player.graph
+    row = [" "] * 100
+    border = ["#"] * 155
+    grid = [['     ' for i in range(31)] for j in range(100)]
+    for i in [0, 1, 98, 99]:
+        grid[i] = border.copy()
+
+    for r_id in m:
+        coords = m[r_id]['coordinates']
+        x = int(coords[1:3])-45
+        y = int(coords[-3:-1])
+        has_e = 'e' in m[r_id]['exits'] and g[r_id]['e'] != "?"
+        if has_e:
+            grid[y][x] = str(r_id).zfill(3) + "--"
+        else:
+            grid[y][x] = str(r_id).zfill(3) + "  "
+
+    for line in grid:
+        print("".join(line))
+
+
 if __name__ == '__main__':
     running = True
     command_list = {
@@ -286,7 +311,8 @@ if __name__ == '__main__':
         "getPowers": {"call": acquire_powers, "arg_count": 0},
         "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
         "transmogrify": {"call": transmogrify, "arg_count": 1},
-        "warp": {"call": player.warp, "arg_count": 0}
+        "warp": {"call": player.warp, "arg_count": 0},
+        "showMap": {"call": print_map, "arg_count": 0}
     }
 
     while running:
@@ -311,12 +337,3 @@ if __name__ == '__main__':
                     " ".join(args) if len(args) > 1 else args[0])
             elif command_list[cmd]["arg_count"] == 0:
                 command_list[cmd]['call']()
-        # command_list[cmd]()
-    # player.travel('n')
-    # player.travel('s')
-    # explore_maze()
-    # travel_to_target(79)
-    # player.pick_up_loot('tiny treasure')
-    # print(player.inventory)
-    # player.drop_loot('tiny treasure')
-    # print(player.inventory)
