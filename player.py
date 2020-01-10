@@ -131,7 +131,10 @@ class Player:
         self.cooldown = self.current_room['cooldown']
 
         if self.world == 'dark' and 'golden snitch' in next_room['items']:
-            self.pick_up_loot('golden snitch')
+            try:
+                self.pick_up_loot('golden snitch')
+            except:
+                print("Somebody already got that snitch!")
 
         for message in next_room['messages']:
             print(f"{message}")
@@ -145,7 +148,7 @@ class Player:
         curr_id = self.current_room['room_id']
 
         print("\n===================")
-        if "fly" in self.abilities and self.world != 'dark' and self.map[str(curr_id)]['elevation'] > 0:
+        if "fly" in self.abilities and self.map[str(curr_id)]['terrain'] in ['MOUNTAIN', 'NORMAL']:
             method = "fly"
             print(f"Flying {direction} from room {curr_id}...")
         else:

@@ -9,11 +9,17 @@ player = Player()
 
 
 def get_name(name):
+    """
+    Using the most recent locations of treasure, the player travels to those rooms
+    and picks up items until inventory is full, then will automatically travel back to the shop and sell them.
+    Once having sold 1000g worth of items at the shop, player will go to Pirate Ry's and
+    purchase the specified name for themselves (needed for mining Lambda coins).
+    """
 
     # Make list of treasure rooms
     treasure_rooms = []
     for k, v in player.map.items():
-        if "tiny treasure" in v["items"]:
+        if len(v["items"]) > 0:
             treasure_rooms.append(k)
     treasure_rooms[len(treasure_rooms)//2:]
     print("The following rooms have treasure:", treasure_rooms)
@@ -51,19 +57,21 @@ def get_name(name):
 
 
 def sell_loot():
+    """
+    Travels to shop and sells all items in inventory.
+    """
     travel_to_target(1)
     time.sleep(player.cooldown)
     print(player.inventory)
     for item in player.inventory:
-        print("in for loop")
         json = {"name": item}
-        print(json)
         r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
                                                             "Content-Type": "application/json"}, json=json).json()
         time.sleep(r1['cooldown'])
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        print(r1_conf)
         time.sleep(r1_conf['cooldown'])
     player.check_self()
 
@@ -163,7 +171,7 @@ def travel_to_target(target='?'):
 
 def explore_maze():
     """
-    While the player's map is shorter than the number of rooms, continue looping
+    While the player's map has any room with unexplored exit, continue looping
     through DFT until a dead end OR already fully-explored room is found,
     then perform BFS to find shortest path to room with unexplored path and go there.
     """
@@ -178,14 +186,14 @@ def explore_maze():
 def acquire_powers():
     """
     After maze has been generated, now go to shrines and acquire powers by praying.
-    Order of importance is flight -> dash -> everything else if ready.
+    Order of importance is dash -> flight -> everything else if available.
     """
-    if "fly" not in player.abilities:
-        shrine = 22
-        travel_to_target(shrine)
-        player.pray()
     if "dash" not in player.abilities:
         shrine = 461
+        travel_to_target(shrine)
+        player.pray()
+    if "fly" not in player.abilities:
+        shrine = 22
         travel_to_target(shrine)
         player.pray()
     if "carry" not in player.abilities:
@@ -199,29 +207,16 @@ def acquire_powers():
     print(f"Your Abilities are now: {player.abilities}")
 
 
-def sell_loot():
-    travel_to_target(1)
-    time.sleep(player.cooldown)
-    print('\nAll the items here in your bag shall be sold', player.inventory, "\n")
-    for item in player.inventory:
-        json = {"name": item}
-        r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
-                                                            "Content-Type": "application/json"}, json=json).json()
-        time.sleep(r1['cooldown'])
-        json['confirm'] = "yes"
-        r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
-                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        # print(r1_conf)
-        print(f"Clerk: {r1_conf['messages'][0]}")
-        print(f'{"*"*8} {r1_conf["messages"][1]} {"*"*8}\n')
-        player.cooldown = r1_conf['cooldown']
-        time.sleep(player.cooldown)
-    player.check_self()
-
-
 def get_rich():
-    if player.world == 'light':
-        player.check_balance()
+    """
+    If in light world (start), player will continuously loop getting Lambda coin locations
+    from the Wishing Well and going to that spot to mine them. Will also pick up any treasures along the way,
+    and if inventory becomes full, will go to the shop to sell them, maximizing gold and LC profit.
+
+    If in dark world, player will go to the dark Wishing Well, wait until a new snitch location has been revealed
+    (means somebody else just got the last one), go there, and loot it. Player will perform a set amount of checks
+    at the well and will go to the specified location regardless after reaching that count.
+    """
     while True:
         if player.world == 'dark':
             print(f"\n{player.name} currently has {player.snitches} snitches!")
@@ -235,9 +230,13 @@ def get_rich():
             print('Waiting for new snitch location...')
             head_start = player.examine('WELL')
             count = 0
-            while head_start == new_room and count < 25:
+            check_limit = 100
+            while head_start == new_room and count < check_limit:
                 head_start = player.examine('WELL')
-                count+=1
+                count += 1
+                if count >= check_limit:
+                    print(
+                        "You can't wait here any longer. Go to the last known location!")
             new_room = head_start
 
         print(
@@ -256,18 +255,27 @@ def get_rich():
 
 
 def get_leaderboard():
+    """
+    Travels to location of the gold leaderboard and prints it out.
+    """
     time.sleep(player.cooldown)
     travel_to_target(486)
     player.examine('BOOK')
 
 
 def transmogrify(item):
+    """
+    Tosses an acquired item and one Lambda Coin into the transmog in return for random gear.
+    """
     time.sleep(player.cooldown)
     travel_to_target(495)
     player.transform_coin(item)
 
 
 def print_map():
+    """
+    Prints an approximation of the built map in the REPL.
+    """
     m = player.map
     g = player.graph
     row = [" "] * 100
