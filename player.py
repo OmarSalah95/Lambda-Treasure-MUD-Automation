@@ -120,7 +120,7 @@ class Player:
         if 'players' in next_room:
             del next_room['players']
         next_id = next_room['room_id']
-
+        
         # update map with room info
         self.map[next_id] = next_room
         self._write_file('map.txt', self.map)
@@ -134,7 +134,10 @@ class Player:
                 self.pick_up_loot('golden snitch')
             except:
                 print("Somebody already got that snitch!")
-
+        elif len(next_room['items']) :
+            for item in next_room['items']:
+                self.pick_up_loot(item)
+            
         for message in next_room['messages']:
             print(f"{message}")
 
