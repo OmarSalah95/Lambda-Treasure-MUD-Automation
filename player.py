@@ -109,7 +109,7 @@ class Player:
             return
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
-        print("\n===================")
+        print("\n======================================")
         print(f"Dashing {direction} from room {curr_id}...")
 
         json = {"direction": direction,
@@ -120,7 +120,7 @@ class Player:
         if 'players' in next_room:
             del next_room['players']
         next_id = next_room['room_id']
-        
+
         # update map with room info
         self.map[next_id] = next_room
         self._write_file('map.txt', self.map)
@@ -134,22 +134,22 @@ class Player:
                 self.pick_up_loot('golden snitch')
             except:
                 print("Somebody already got that snitch!")
-        elif len(next_room['items']) :
+        elif self.world == 'light' and len(next_room['items']):
             for item in next_room['items']:
                 self.pick_up_loot(item)
-            
+
         for message in next_room['messages']:
             print(f"{message}")
 
         print(f"Now the player is in {self.current_room['room_id']}")
-        print(f"Cooldown for dashing this time was {self.cooldown}")
-        print("===================\n")
+        print(f"Cooldown before next action: {self.cooldown} seconds")
+        print("======================================\n")
 
     def travel(self, direction, method="move"):
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
 
-        print("\n===================")
+        print("\n======================================")
         if "fly" in self.abilities and self.map[str(curr_id)]['terrain'] in ['MOUNTAIN', 'NORMAL']:
             method = "fly"
             print(f"Flying {direction} from room {curr_id}...")
@@ -202,11 +202,11 @@ class Player:
                 print(f"{message}")
 
             print(f"Now the player is in {self.current_room['room_id']}")
-            print(f"Cooldown for moving this time was {self.cooldown}")
+            print(f"Cooldown before next action: {self.cooldown} seconds")
             if len(self.graph) < 500:
                 print(
                     f"Total number of rooms explored so far: {len(self.graph)}")
-        print("===================\n")
+        print("======================================\n")
 
     def get_coin(self):
         time.sleep(self.cooldown)
