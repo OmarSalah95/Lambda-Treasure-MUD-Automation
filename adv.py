@@ -4,7 +4,6 @@ import random
 import time
 
 from player import Player
-
 from api import url, key, opposite, Queue
 player = Player()
 
@@ -261,6 +260,29 @@ def transmogrify(item):
     player.transform_coin(item)
 
 
+def print_map():
+    m = player.map
+    g = player.graph
+    row = [" "] * 100
+    border = ["#"] * 155
+    grid = [['     ' for i in range(31)] for j in range(100)]
+    for i in [0, 1, 98, 99]:
+        grid[i] = border.copy()
+
+    for r_id in m:
+        coords = m[r_id]['coordinates']
+        x = int(coords[1:3])-45
+        y = int(coords[-3:-1])
+        has_e = 'e' in m[r_id]['exits'] and g[r_id]['e'] != "?"
+        if has_e:
+            grid[y][x] = str(r_id).zfill(3) + "--"
+        else:
+            grid[y][x] = str(r_id).zfill(3) + "  "
+
+    for line in grid:
+        print("".join(line))
+
+
 if __name__ == '__main__':
     running = True
     command_list = {
@@ -282,7 +304,8 @@ if __name__ == '__main__':
         "getPowers": {"call": acquire_powers, "arg_count": 0},
         "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
         "transmogrify": {"call": transmogrify, "arg_count": 1},
-        "warp": {"call": player.warp, "arg_count": 0}
+        "warp": {"call": player.warp, "arg_count": 0},
+        "showMap": {"call": print_map, "arg_count": 0}
     }
 
     while running:
