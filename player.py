@@ -28,7 +28,6 @@ class Player:
         self.snitches = data['snitches'] if data['snitches'] else 0
         self.current_room = self.check_room()
         self.world = "dark" if self.current_room['room_id'] > 499 else "light"
-        self.snitch_location = None
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
 
@@ -68,24 +67,24 @@ class Player:
 
     def check_self(self, cause=None):
         data = self._get_status()
-        cleaned = {**data} # How cool is the spread operator!
-        cleaned['status'].append("Glasowyn's hands stand Empty and Effervescent, see them filled.") if len(cleaned['status']) < 1 else None
+        cleaned = {**data}  # How cool is the spread operator!
+        cleaned['status'].append("Glasowyn's hands stand Empty and Effervescent, see them filled.") if len(
+            cleaned['status']) < 1 else None
         cleaned["world"] = self.world
-        cut = ['has_mined','errors', ] 
+        cut = ['has_mined', 'errors', ]
         for k in cut:
-                del cleaned[k]
+            del cleaned[k]
         if cause == "item pick up":
             ret = f"  You are now held down by the weight of {cleaned['encumbrance']} Stones.\n  Your Experience and equipment Grant you the ability to\n    carry {cleaned['strength']} stones before you need to take longer rests.\n  Your bag now carries {cleaned['inventory']}"
-            
-            print(ret + f"\n  Your ghost seems to have the space to carry an additional item if you would like" if "carry" in cleaned['abilities'] and len(cleaned['status']) else ret )
-        # elif cause == "snitch":
-        #     print(data)
+
+            print(ret + f"\n  Your ghost seems to have the space to carry an additional item if you would like" if "carry" in cleaned['abilities'] and len(
+                cleaned['status']) else ret)
         else:
             print('\n'+"*"*22+' '+"Your Current State"+' '+"*"*22)
             for item in cleaned.items():
-                print(f"{item[0]}: {item[1]}")        
+                print(f"{item[0]}: {item[1]}")
             print("*"*64+'\n')
-            
+
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']
@@ -222,7 +221,8 @@ class Player:
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
             self.cooldown = req['cooldown']
             time.sleep(self.cooldown)
-            self.check_self("item pick up") if self.world == 'light' else print('  Success!\n  '+req['messages'][0] if len(req['messages']) > 0 else print("  Oh NO!\n  just as quickly as you arrived, the Golden Snitch disappeared to the next room and out of grasp!"))
+            self.check_self("item pick up") if self.world == 'light' else print('  Success!\n  '+req['messages'][0] if len(req['messages']) > 0 else print(
+                "  Oh NO!\n  just as quickly as you arrived, the Golden Snitch disappeared to the next room and out of grasp!"))
         else:
             if "carry" in self.abilities:
                 if len(self.status) != 0:
@@ -285,7 +285,6 @@ class Player:
             # full message for light is "Mine your coin in room ###"
             # but message for dark well is "Find your snitch in room ###"
             limiter = 23 if self.world == 'light' else 24
-            print(cpu.hint[limiter:])
             return cpu.hint[limiter:]
         else:
             print(req['description'])

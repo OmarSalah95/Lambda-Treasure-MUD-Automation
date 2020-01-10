@@ -251,7 +251,7 @@ def get_rich():
             # player automatically loots a golden snitch anytime they come across it, either
             # from move or dash
             time.sleep(player.cooldown)
-            # player.check_self('snitch')
+            player.check_self()
 
 
 def get_leaderboard():
