@@ -220,8 +220,8 @@ def sell_loot():
 
 
 def get_rich():
-    print(f"{player.name} currently has {player.snitches} snitches!")
-    player.check_balance()
+    if player.world == 'light':
+        player.check_balance()
     while True:
         if player.world == 'dark':
             print(f"\n{player.name} currently has {player.snitches} snitches!")
@@ -252,7 +252,7 @@ def get_rich():
             # player automatically loots a golden snitch anytime they come across it, either
             # from move or dash
             time.sleep(player.cooldown)
-            player.check_self()
+            player.check_self('snitch')
 
 
 def get_leaderboard():

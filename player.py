@@ -71,13 +71,15 @@ class Player:
         cleaned = {**data} # How cool is the spread operator!
         cleaned['status'].append("Glasowyn's hands stand Empty and Effervescent, see them filled.") if len(cleaned['status']) < 1 else None
         cleaned["world"] = self.world
-        cut = ['has_mined','errors', 'messages'] 
+        cut = ['has_mined','errors', ] 
         for k in cut:
                 del cleaned[k]
         if cause == "item pick up":
             ret = f"  You are now held down by the weight of {cleaned['encumbrance']} Stones.\n  Your Experience and equipment Grant you the ability to\n    carry {cleaned['strength']} stones before you need to take longer rests.\n  Your bag now carries {cleaned['inventory']}"
             
             print(ret + f"\n  Your ghost seems to have the space to carry an additional item if you would like" if "carry" in cleaned['abilities'] and len(cleaned['status']) else ret )
+        elif cause == "snitch":
+            print(data['messages'])
         else:
             print('\n'+"*"*22+' '+"Your Current State"+' '+"*"*22)
             for item in cleaned.items():
@@ -217,7 +219,7 @@ class Player:
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
             self.cooldown = req['cooldown']
             time.sleep(self.cooldown)
-            self.check_self("item pick up")
+            self.check_self("item pick up") if self.world == 'dark' else self.check_self('snitch')
         else:
             if "carry" in self.abilities:
                 if len(self.status) != 0:
