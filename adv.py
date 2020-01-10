@@ -57,6 +57,9 @@ def get_name(name):
 
 
 def sell_loot():
+    """
+    Travels to shop and sells all items in inventory.
+    """
     travel_to_target(1)
     time.sleep(player.cooldown)
     print('\nAll the items here in your bag shall be sold', player.inventory, "\n")
@@ -68,7 +71,6 @@ def sell_loot():
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        # print(r1_conf)
         print(f"Clerk: {r1_conf['messages'][0]}")
         print(f'{"*"*8} {r1_conf["messages"][1]} {"*"*8}\n')
         player.cooldown = r1_conf['cooldown']
@@ -138,8 +140,21 @@ def travel_to_target(target='?'):
     then moves through that path in order.
     """
 
+    # Edge cases
     if player.current_room["room_id"] == target:
+        # already there, just return from function
         return
+    if target != "?" and target < 0 or target > 999:
+        print(f"There is no room {target}... in either world. Try again.")
+        return
+    if target != "?" and str(target) not in player.graph:
+        # room not in graph, need to warp first
+        if 'warp' in player.abilities:
+            player.warp()
+        else:
+            print(f"Looks like your destination is in another dimension... but you don't have the warp ability yet!")
+            return
+
     bfs_path = generate_path(target)
     print(f"\nNew path to follow! {bfs_path}\n")
     while bfs_path is not None and len(bfs_path) > 0:
@@ -251,14 +266,13 @@ def get_rich():
             # player automatically loots a golden snitch anytime they come across it, either
             # from move or dash
             time.sleep(player.cooldown)
-            # player.check_self('snitch')
+            player.check_self()
 
 
 def get_leaderboard():
     """
     Travels to location of the gold leaderboard and prints it out.
     """
-    time.sleep(player.cooldown)
     travel_to_target(486)
     player.examine('BOOK')
 
@@ -267,7 +281,6 @@ def transmogrify(item):
     """
     Tosses an acquired item and one Lambda Coin into the transmog in return for random gear.
     """
-    time.sleep(player.cooldown)
     travel_to_target(495)
     player.transform_coin(item)
 
