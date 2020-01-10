@@ -25,8 +25,10 @@ class Player:
         self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
+        self.snitches = data['snitches'] if data['snitches'] else 0
         self.current_room = self.check_room()
         self.world = "dark" if self.current_room['room_id'] > 499 else "light"
+        self.snitch_location = None
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
 
@@ -81,6 +83,7 @@ class Player:
         self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
+        self.snitches = data['snitches'] if data['snitches'] else 0
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
 
@@ -109,6 +112,9 @@ class Player:
         # change current room and update cooldown
         self.current_room = next_room
         self.cooldown = self.current_room['cooldown']
+
+        if self.world == 'dark' and 'golden snitch' in next_room['items']:
+            self.pick_up_loot('golden snitch')
 
         for message in next_room['messages']:
             print(f"{message}")
@@ -143,6 +149,9 @@ class Player:
                     for item in next_room['items']:
                         time.sleep(next_room['cooldown'])
                         self.pick_up_loot(item)
+            else:
+                if 'golden snitch' in next_room['items']:
+                    self.pick_up_loot('golden snitch')
 
             if 'players' in next_room:
                 del next_room['players']
@@ -150,6 +159,7 @@ class Player:
 
             # add to graph and map, in addition to making graph connections
             if str(next_id) not in self.graph:
+                print(f"New room! # {next_id}")
                 self.graph[str(next_id)] = {
                     e: '?' for e in next_room['exits']}
 
@@ -190,7 +200,7 @@ class Player:
             time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/take/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-            print(req)
+            print(req['messages'][0])
             self.cooldown = req['cooldown']
             time.sleep(self.cooldown)
         else:
@@ -255,7 +265,7 @@ class Player:
             # full message for light is "Mine your coin in room ###"
             # but message for dark well is "Find your snitch in room ###"
             limiter = 23 if self.world == 'light' else 24
-
+            # print(cpu.hint[limiter:])
             return cpu.hint[limiter:]
         else:
             print(req['description'])
@@ -304,7 +314,7 @@ class Player:
             time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/warp/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}).json()
-            print(req)
+            print(req['messages'][0])
             self.cooldown = req['cooldown']
             if self.world == 'light':
                 self.world = 'dark'

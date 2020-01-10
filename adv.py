@@ -130,6 +130,7 @@ def travel_to_target(target='?'):
     Runs a BFS to specific room or to nearest room with unexplored exit,
     then moves through that path in order.
     """
+
     if player.current_room["room_id"] == target:
         return
     bfs_path = generate_path(target)
@@ -167,7 +168,7 @@ def explore_maze():
     through DFT until a dead end OR already fully-explored room is found,
     then perform BFS to find shortest path to room with unexplored path and go there.
     """
-    f = 'dark_graph.txt' if player.world is 'dark' else 'graph.txt'
+    f = 'dark_graph.txt' if player.world == 'dark' else 'graph.txt'
     graph = open(f).read().rstrip()
     while '?' in graph:
         dft_for_dead_end()
@@ -218,16 +219,34 @@ def sell_loot():
 
 def get_rich():
     while True:
+        if player.world == 'dark':
+            print(f"\n{player.name} currently has {player.snitches} snitches!")
         if player.encumbrance >= player.strength:
             sell_loot()
         # travel to wishing well
-        travel_to_target(55)
+        travel_to_target(55 if player.world == 'light' else 555)
         # examine it to get the new hint
         new_room = player.examine('WELL')
-        print(f"Next coin can be mined in room {new_room}\n")
+        if player.world == 'dark':
+            print('Waiting for new snitch location...')
+            head_start = player.examine('WELL')
+            count = 0
+            while head_start == new_room and count < 15:
+                head_start = player.examine('WELL')
+                count += 1
+            new_room = head_start
+
+        print(
+            f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
         travel_to_target(int(new_room))
-        player.get_coin()
-        player.check_balance()
+        if player.world == 'light':
+            player.get_coin()
+            player.check_balance()
+        else:
+            # player automatically loots a golden snitch anytime they come across it, either
+            # from move or dash
+            time.sleep(player.cooldown)
+            player.check_self()
 
 
 def get_leaderboard():
@@ -241,11 +260,6 @@ def transmogrify(item):
     travel_to_target(495)
     player.transform_coin(item)
 
-
-for room in player.map:
-    if player.map[room]['title'] != 'Darkness':
-        with open("dark_poi.txt", "a") as f:
-            f.write(f"{player.map[room]}\n")
 
 if __name__ == '__main__':
     running = True
@@ -293,12 +307,3 @@ if __name__ == '__main__':
                     " ".join(args) if len(args) > 1 else args[0])
             elif command_list[cmd]["arg_count"] == 0:
                 command_list[cmd]['call']()
-        # command_list[cmd]()
-    # player.travel('n')
-    # player.travel('s')
-    # explore_maze()
-    # travel_to_target(79)
-    # player.pick_up_loot('tiny treasure')
-    # print(player.inventory)
-    # player.drop_loot('tiny treasure')
-    # print(player.inventory)
