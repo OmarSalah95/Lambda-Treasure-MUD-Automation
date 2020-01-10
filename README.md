@@ -5,7 +5,7 @@
 All player interactions are initiated by loading the command prompt by running `python adv.py` from root directory.
 
 - Note that a valid API key in a `api_key.txt` file is required to submit any API requests.
-- REPLY command prompt can be exited by running the `quit` command.
+- REPL command prompt can be exited by running the `quit` command.
 
 ## Player methods
 
@@ -35,8 +35,9 @@ Executes a single command off the Player class instance.
 ### Check Self
 
 `checkSelf` -- Prints all current player info.
+file:///home/adam/Pictures/Screenshot%20from%202020-01-10%2011-44-24.png
 
-![Move](images/player.png)
+![Player info](images/player.png)
 
 ### Check Room
 
@@ -75,7 +76,7 @@ Executes a single command off the Player class instance.
 
 `showMap` -- Builds a map from the player's current world and currently known rooms and prints it.
 
-![Move](images/map.png)
+![Map](images/map.png)
 
 ## Helper functions
 
