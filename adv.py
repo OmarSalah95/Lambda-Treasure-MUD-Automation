@@ -57,12 +57,9 @@ def get_name(name):
 
 
 def sell_loot():
-    """
-    Travels to shop and sells all items in inventory.
-    """
     travel_to_target(1)
     time.sleep(player.cooldown)
-    print(player.inventory)
+    print('\nAll the items here in your bag shall be sold', player.inventory, "\n")
     for item in player.inventory:
         json = {"name": item}
         r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
@@ -71,8 +68,11 @@ def sell_loot():
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        print(r1_conf)
-        time.sleep(r1_conf['cooldown'])
+        # print(r1_conf)
+        print(f"Clerk: {r1_conf['messages'][0]}")
+        print(f'{"*"*8} {r1_conf["messages"][1]} {"*"*8}\n')
+        player.cooldown = r1_conf['cooldown']
+        time.sleep(player.cooldown)
     player.check_self()
 
 
