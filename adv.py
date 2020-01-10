@@ -140,8 +140,21 @@ def travel_to_target(target='?'):
     then moves through that path in order.
     """
 
+    # Edge cases
     if player.current_room["room_id"] == target:
+        # already there, just return from function
         return
+    if target != "?" and target < 0 or target > 999:
+        print(f"There is no room {target}... in either world. Try again.")
+        return
+    if target != "?" and str(target) not in player.graph:
+        # room not in graph, need to warp first
+        if 'warp' in player.abilities:
+            player.warp()
+        else:
+            print(f"Looks like your destination is in another dimension... but you don't have the warp ability yet!")
+            return
+
     bfs_path = generate_path(target)
     print(f"\nNew path to follow! {bfs_path}\n")
     while bfs_path is not None and len(bfs_path) > 0:
@@ -260,7 +273,6 @@ def get_leaderboard():
     """
     Travels to location of the gold leaderboard and prints it out.
     """
-    time.sleep(player.cooldown)
     travel_to_target(486)
     player.examine('BOOK')
 
@@ -269,7 +281,6 @@ def transmogrify(item):
     """
     Tosses an acquired item and one Lambda Coin into the transmog in return for random gear.
     """
-    time.sleep(player.cooldown)
     travel_to_target(495)
     player.transform_coin(item)
 
