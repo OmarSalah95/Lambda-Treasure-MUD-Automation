@@ -66,9 +66,24 @@ class Player:
             del data['players']
         return data
 
-    def check_self(self):
+    def check_self(self, cause=None):
         data = self._get_status()
-        print(data)
+        cleaned = {**data} # How cool is the spread operator!
+        cleaned['status'].append("Glasowyn's hands stand Empty and Effervescent, see them filled.") if len(cleaned['status']) < 1 else None
+        cleaned["world"] = self.world
+        cut = ['has_mined','errors', 'messages'] 
+        for k in cut:
+                del cleaned[k]
+        if cause == "item pick up":
+            ret = f"  You are now held down by the weight of {cleaned['encumbrance']} Stones.\n  Your Experience and equipment Grant you the ability to\n    carry {cleaned['strength']} stones before you need to take longer rests.\n  Your bag now carries {cleaned['inventory']}"
+            
+            print(ret + f"\n  Your ghost seems to have the space to carry an additional item if you would like" if "carry" in cleaned['abilities'] and len(cleaned['status']) else ret )
+        else:
+            print('\n'+"*"*22+' '+"Your Current State"+' '+"*"*22)
+            for item in cleaned.items():
+                print(f"{item[0]}: {item[1]}")        
+            print("*"*64+'\n')
+            
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']
@@ -199,9 +214,9 @@ class Player:
             time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/take/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-            print(req)
             self.cooldown = req['cooldown']
             time.sleep(self.cooldown)
+            self.check_self("item pick up")
         else:
             if "carry" in self.abilities:
                 if len(self.status) != 0:

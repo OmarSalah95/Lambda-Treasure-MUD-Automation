@@ -202,7 +202,7 @@ def acquire_powers():
 def sell_loot():
     travel_to_target(1)
     time.sleep(player.cooldown)
-    print(player.inventory)
+    print('\nAll the items here in your bag shall be sold', player.inventory, "\n")
     for item in player.inventory:
         json = {"name": item}
         r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
@@ -240,10 +240,10 @@ def get_rich():
 
         print(
             f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
+        if player.encumbrance >= player.strength:
+            sell_loot()
         travel_to_target(int(new_room))
         if player.world == 'light':
-            if player.encumbrance >= player.strength:
-                sell_loot()
             player.get_coin()
             player.check_balance()
         else:
