@@ -3,7 +3,7 @@
 # Player actions
 All player interactions are initiated by loading the command prompt by running `python adv.py` from root directory.
 - Note that a valid API key in a `api_key.txt` file is required to submit any API requests.
-- REPLY command prompt can be exited by running the `quit` command.
+- REPL command prompt can be exited by running the `quit` command.
 
 
 ## Player methods
