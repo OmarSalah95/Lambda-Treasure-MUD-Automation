@@ -241,6 +241,8 @@ def get_rich():
 
         print(
             f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
+        if player.encumbrance >= player.strength:
+            sell_loot()
         travel_to_target(int(new_room))
         if player.world == 'light':
             player.get_coin()
@@ -249,7 +251,7 @@ def get_rich():
             # player automatically loots a golden snitch anytime they come across it, either
             # from move or dash
             time.sleep(player.cooldown)
-            player.check_self()
+            # player.check_self('snitch')
 
 
 def get_leaderboard():
