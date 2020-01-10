@@ -16,6 +16,8 @@ Executes a single command off the Player class instance.
 - If the current terrain is "NORMAL" or "MOUNTAIN" and the player has the "fly" ability, will fly instead to get Flight cooldown bonus and avoid elevation penalties. 
 - Will also loot any found items in the next room upon entering, if player inventory allows for it.
 
+file:///home/adam/Pictures/Screenshot%20from%202020-01-10%2011-49-51.png
+
 ### Loot Item
 `loot <item name>` -- Player attempts to pick up the named item from the current room and add it to their inventory.
 - If player has the `carry` ability, will give heaviest item to ghost companion to lighten load to avoid being overencumbered.
@@ -25,6 +27,8 @@ Executes a single command off the Player class instance.
 
 ### Check Self
 `checkSelf` -- Prints all current player info.
+file:///home/adam/Pictures/Screenshot%20from%202020-01-10%2011-44-24.png
+
 
 ### Check Room
 `roomDeets` -- Retrieves info on current room from the server, updating any relevant information such as items in room.
@@ -53,6 +57,7 @@ Executes a single command off the Player class instance.
 ### Show Map
 `showMap` -- Builds a map from the player's current world and currently known rooms and prints it.
 
+file:///home/adam/Pictures/Screenshot%20from%202020-01-10%2012-36-28.png
 
 ## Helper functions
 Run one or more player methods to execute more complex functionality for more programmatic approach.
