@@ -315,25 +315,25 @@ if __name__ == '__main__':
     running = True
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
-        "buildMap": {"call": explore_maze, "arg_count": 0},
-        "travelTo": {"call": travel_to_target, "arg_count": 1},
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
-        "mine": {"call": player.get_coin, "arg_count": 0},
-        "pray": {"call": player.pray, "arg_count": 0},
-        "wear": {"call": player.wear, "arg_count": 1},
         "checkSelf": {"call": player.check_self, "arg_count": 0},
-        "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
+        "mine": {"call": player.get_coin, "arg_count": 0},
         "checkCoins": {"call": player.check_balance, "arg_count": 0},
-        "getName": {"call": get_name, "arg_count": 1},
-        "examine": {"call": player.examine, "arg_count": 1},
-        "getRich": {"call": get_rich, "arg_count": 0},
-        "getPowers": {"call": acquire_powers, "arg_count": 0},
-        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
-        "transmogrify": {"call": transmogrify, "arg_count": 1},
+        "wear": {"call": player.wear, "arg_count": 1},
+        "pray": {"call": player.pray, "arg_count": 0},
         "warp": {"call": player.warp, "arg_count": 0},
-        "showMap": {"call": print_map, "arg_count": 0}
+        "examine": {"call": player.examine, "arg_count": 1},
+        "showMap": {"call": print_map, "arg_count": 0},
+        "buildMap": {"call": explore_maze, "arg_count": 0},
+        "travelTo": {"call": travel_to_target, "arg_count": 1},
+        "sellLoot": {"call": sell_loot, "arg_count": 0},
+        "getName": {"call": get_name, "arg_count": 1},
+        "transmogrify": {"call": transmogrify, "arg_count": 1},
+        "getPowers": {"call": acquire_powers, "arg_count": 0},
+        "getRich": {"call": get_rich, "arg_count": 0},
+        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
     }
 
     while running:
