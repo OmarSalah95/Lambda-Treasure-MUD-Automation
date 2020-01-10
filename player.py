@@ -78,8 +78,8 @@ class Player:
             ret = f"  You are now held down by the weight of {cleaned['encumbrance']} Stones.\n  Your Experience and equipment Grant you the ability to\n    carry {cleaned['strength']} stones before you need to take longer rests.\n  Your bag now carries {cleaned['inventory']}"
             
             print(ret + f"\n  Your ghost seems to have the space to carry an additional item if you would like" if "carry" in cleaned['abilities'] and len(cleaned['status']) else ret )
-        elif cause == "snitch":
-            print(data['messages'])
+        # elif cause == "snitch":
+        #     print(data)
         else:
             print('\n'+"*"*22+' '+"Your Current State"+' '+"*"*22)
             for item in cleaned.items():
@@ -219,7 +219,7 @@ class Player:
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
             self.cooldown = req['cooldown']
             time.sleep(self.cooldown)
-            self.check_self("item pick up") if self.world == 'dark' else self.check_self('snitch')
+            self.check_self("item pick up") if self.world == 'light' else print('  Success!\n  '+req['messages'][0] if len(req['messages']) > 0 else print("  Oh NO!\n  just as quickly as you arrived, the Golden Snitch disappeared to the next room and out of grasp!"))
         else:
             if "carry" in self.abilities:
                 if len(self.status) != 0:
