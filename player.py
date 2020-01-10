@@ -68,7 +68,6 @@ class Player:
 
     def check_self(self):
         data = self._get_status()
-        print(data)
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']
