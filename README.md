@@ -1,5 +1,7 @@
-# idk-treasure-hunt
-
+# Lambda Island MUD
+  ### A game to test your knowledge of Algorithms, Block Chain, Computer Architecture, and Graphs.
+  
+  
 # Player actions
 
 All player interactions are initiated by loading the command prompt by running `python adv.py` from root directory.
