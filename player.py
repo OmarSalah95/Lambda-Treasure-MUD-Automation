@@ -25,6 +25,7 @@ class Player:
         self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
+        self.snitches = data['snitches'] if data['snitches'] else 0
         self.current_room = self.check_room()
         self.world = "dark" if self.current_room['room_id'] > 499 else "light"
         self.map = self._read_file('map.txt')
@@ -64,9 +65,26 @@ class Player:
             del data['players']
         return data
 
-    def check_self(self):
+    def check_self(self, cause=None):
         data = self._get_status()
-        print(data)
+        cleaned = {**data}  # How cool is the spread operator!
+        cleaned['status'].append("Glasowyn's hands stand Empty and Effervescent, see them filled.") if len(
+            cleaned['status']) < 1 else None
+        cleaned["world"] = self.world
+        cut = ['has_mined', 'errors', ]
+        for k in cut:
+            del cleaned[k]
+        if cause == "item pick up":
+            ret = f"  You are now held down by the weight of {cleaned['encumbrance']} Stones.\n  Your Experience and equipment Grant you the ability to\n    carry {cleaned['strength']} stones before you need to take longer rests.\n  Your bag now carries {cleaned['inventory']}"
+
+            print(ret + f"\n  Your ghost seems to have the space to carry an additional item if you would like" if "carry" in cleaned['abilities'] and len(
+                cleaned['status']) else ret)
+        else:
+            print('\n'+"*"*22+' '+"Your Current State"+' '+"*"*22)
+            for item in cleaned.items():
+                print(f"{item[0]}: {item[1]}")
+            print("*"*64+'\n')
+
         self.name = data['name']
         self.cooldown = data['cooldown']
         self.encumbrance = data['encumbrance']
@@ -81,6 +99,7 @@ class Player:
         self.has_mined = data['has_mined']
         self.errors = data['errors']
         self.messages = data['messages']
+        self.snitches = data['snitches'] if data['snitches'] else 0
         self.map = self._read_file('map.txt')
         self.graph = self._read_file('graph.txt')
 
@@ -90,7 +109,7 @@ class Player:
             return
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
-        print("\n===================")
+        print("\n======================================")
         print(f"Dashing {direction} from room {curr_id}...")
 
         json = {"direction": direction,
@@ -110,19 +129,28 @@ class Player:
         self.current_room = next_room
         self.cooldown = self.current_room['cooldown']
 
+        if self.world == 'dark' and 'golden snitch' in next_room['items']:
+            try:
+                self.pick_up_loot('golden snitch')
+            except:
+                print("Somebody already got that snitch!")
+        elif self.world == 'light' and len(next_room['items']):
+            for item in next_room['items']:
+                self.pick_up_loot(item)
+
         for message in next_room['messages']:
             print(f"{message}")
 
         print(f"Now the player is in {self.current_room['room_id']}")
-        print(f"Cooldown for dashing this time was {self.cooldown}")
-        print("===================\n")
+        print(f"Cooldown before next action: {self.cooldown} seconds")
+        print("======================================\n")
 
     def travel(self, direction, method="move"):
         time.sleep(self.cooldown)
         curr_id = self.current_room['room_id']
 
-        print("\n===================")
-        if "fly" in self.abilities and self.world != 'dark' and self.map[str(curr_id)]['elevation'] > 0:
+        print("\n======================================")
+        if "fly" in self.abilities and self.map[str(curr_id)]['terrain'] in ['MOUNTAIN', 'NORMAL']:
             method = "fly"
             print(f"Flying {direction} from room {curr_id}...")
         else:
@@ -137,12 +165,19 @@ class Player:
             next_room = requests.post(f"{url}/api/adv/{method}/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
 
+            # change current room and update cooldown
+            self.current_room = next_room
+            self.cooldown = self.current_room['cooldown']
+
             if self.world != 'dark':
                 # Code for looting any items in the room if the space is available
                 if len(next_room['items']) > 0 and self.encumbrance < self.strength:
                     for item in next_room['items']:
                         time.sleep(next_room['cooldown'])
                         self.pick_up_loot(item)
+            else:
+                if 'golden snitch' in next_room['items']:
+                    self.pick_up_loot('golden snitch')
 
             if 'players' in next_room:
                 del next_room['players']
@@ -150,6 +185,7 @@ class Player:
 
             # add to graph and map, in addition to making graph connections
             if str(next_id) not in self.graph:
+                print(f"New room! # {next_id}")
                 self.graph[str(next_id)] = {
                     e: '?' for e in next_room['exits']}
 
@@ -162,19 +198,15 @@ class Player:
             self.map[next_id] = next_room
             self._write_file('map.txt', self.map)
 
-            # change current room and update cooldown
-            self.current_room = next_room
-            self.cooldown = self.current_room['cooldown']
-
             for message in next_room['messages']:
                 print(f"{message}")
 
             print(f"Now the player is in {self.current_room['room_id']}")
-            print(f"Cooldown for moving this time was {self.cooldown}")
+            print(f"Cooldown before next action: {self.cooldown} seconds")
             if len(self.graph) < 500:
                 print(
                     f"Total number of rooms explored so far: {len(self.graph)}")
-        print("===================\n")
+        print("======================================\n")
 
     def get_coin(self):
         time.sleep(self.cooldown)
@@ -190,9 +222,10 @@ class Player:
             time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/take/", headers={
                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-            print(req)
             self.cooldown = req['cooldown']
             time.sleep(self.cooldown)
+            self.check_self("item pick up") if self.world == 'light' else print('  Success!\n  '+req['messages'][0] if len(req['messages']) > 0 else print(
+                "  Oh NO!\n  just as quickly as you arrived, the Golden Snitch disappeared to the next room and out of grasp!"))
         else:
             if "carry" in self.abilities:
                 if len(self.status) != 0:
@@ -235,14 +268,14 @@ class Player:
         json = {"name": item}
         req = requests.post(f"{url}/api/adv/examine/", headers={
             'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
+        self.cooldown = req['cooldown']
 
         if item == "WELL":  # Examining well gives binary code to be deciphered for next coin location
             if os.path.exists("hint.txt"):
                 os.remove("hint.txt")
             desc = req['description']
             instructions = desc.split('\n')
-            for line in instructions[117:]:
-                # All commands before index 117 will just print "Mine your coin in room " before the number
+            for line in instructions[2:]:
                 with open("hint.txt", "a") as f:
                     f.write(f"{line}\n")
 
@@ -252,8 +285,10 @@ class Player:
             # clean up after itself and remove the hint file after used (new one will be made for future hints anyway)
             if os.path.exists("hint.txt"):
                 os.remove("hint.txt")
-
-            return cpu.hint
+            # full message for light is "Mine your coin in room ###"
+            # but message for dark well is "Find your snitch in room ###"
+            limiter = 23 if self.world == 'light' else 24
+            return cpu.hint[limiter:]
         else:
             print(req['description'])
 
@@ -301,7 +336,7 @@ class Player:
             time.sleep(self.cooldown)
             req = requests.post(f"{url}/api/adv/warp/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}).json()
-            print(req)
+            print(req['messages'][0])
             self.cooldown = req['cooldown']
             if self.world == 'light':
                 self.world = 'dark'

@@ -4,17 +4,22 @@ import random
 import time
 
 from player import Player
-
 from api import url, key, opposite, Queue
 player = Player()
 
 
 def get_name(name):
+    """
+    Using the most recent locations of treasure, the player travels to those rooms
+    and picks up items until inventory is full, then will automatically travel back to the shop and sell them.
+    Once having sold 1000g worth of items at the shop, player will go to Pirate Ry's and
+    purchase the specified name for themselves (needed for mining Lambda coins).
+    """
 
     # Make list of treasure rooms
     treasure_rooms = []
     for k, v in player.map.items():
-        if "tiny treasure" in v["items"]:
+        if len(v["items"]) > 0:
             treasure_rooms.append(k)
     treasure_rooms[len(treasure_rooms)//2:]
     print("The following rooms have treasure:", treasure_rooms)
@@ -52,20 +57,24 @@ def get_name(name):
 
 
 def sell_loot():
+    """
+    Travels to shop and sells all items in inventory.
+    """
     travel_to_target(1)
     time.sleep(player.cooldown)
-    print(player.inventory)
+    print('\nAll the items here in your bag shall be sold', player.inventory, "\n")
     for item in player.inventory:
-        print("in for loop")
         json = {"name": item}
-        print(json)
         r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
                                                             "Content-Type": "application/json"}, json=json).json()
         time.sleep(r1['cooldown'])
         json['confirm'] = "yes"
         r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
                                 'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        time.sleep(r1_conf['cooldown'])
+        print(f"Clerk: {r1_conf['messages'][0]}")
+        print(f'{"*"*8} {r1_conf["messages"][1]} {"*"*8}\n')
+        player.cooldown = r1_conf['cooldown']
+        time.sleep(player.cooldown)
     player.check_self()
 
 
@@ -130,8 +139,22 @@ def travel_to_target(target='?'):
     Runs a BFS to specific room or to nearest room with unexplored exit,
     then moves through that path in order.
     """
+
+    # Edge cases
     if player.current_room["room_id"] == target:
+        # already there, just return from function
         return
+    if target != "?" and target < 0 or target > 999:
+        print(f"There is no room {target}... in either world. Try again.")
+        return
+    if target != "?" and str(target) not in player.graph:
+        # room not in graph, need to warp first
+        if 'warp' in player.abilities:
+            player.warp()
+        else:
+            print(f"Looks like your destination is in another dimension... but you don't have the warp ability yet!")
+            return
+
     bfs_path = generate_path(target)
     print(f"\nNew path to follow! {bfs_path}\n")
     while bfs_path is not None and len(bfs_path) > 0:
@@ -163,11 +186,11 @@ def travel_to_target(target='?'):
 
 def explore_maze():
     """
-    While the player's map is shorter than the number of rooms, continue looping
+    While the player's map has any room with unexplored exit, continue looping
     through DFT until a dead end OR already fully-explored room is found,
     then perform BFS to find shortest path to room with unexplored path and go there.
     """
-    f = 'dark_graph.txt' if player.world is 'dark' else 'graph.txt'
+    f = 'dark_graph.txt' if player.world == 'dark' else 'graph.txt'
     graph = open(f).read().rstrip()
     while '?' in graph:
         dft_for_dead_end()
@@ -178,14 +201,14 @@ def explore_maze():
 def acquire_powers():
     """
     After maze has been generated, now go to shrines and acquire powers by praying.
-    Order of importance is flight -> dash -> everything else if ready.
+    Order of importance is dash -> flight -> everything else if available.
     """
-    if "fly" not in player.abilities:
-        shrine = 22
-        travel_to_target(shrine)
-        player.pray()
     if "dash" not in player.abilities:
         shrine = 461
+        travel_to_target(shrine)
+        player.pray()
+    if "fly" not in player.abilities:
+        shrine = 22
         travel_to_target(shrine)
         player.pray()
     if "carry" not in player.abilities:
@@ -199,71 +222,118 @@ def acquire_powers():
     print(f"Your Abilities are now: {player.abilities}")
 
 
-def sell_loot():
-    travel_to_target(1)
-    time.sleep(player.cooldown)
-    print(player.inventory)
-    for item in player.inventory:
-        json = {"name": item}
-        r1 = requests.post(f"{url}/api/adv/sell/", headers={'Authorization': f"Token {key}",
-                                                            "Content-Type": "application/json"}, json=json).json()
-        time.sleep(r1['cooldown'])
-        json['confirm'] = "yes"
-        r1_conf = requests.post(f"{url}/api/adv/sell/", headers={
-                                'Authorization': f"Token {key}", "Content-Type": "application/json"}, json=json).json()
-        print(r1_conf)
-        time.sleep(r1_conf['cooldown'])
-    player.check_self()
-
-
 def get_rich():
+    """
+    If in light world (start), player will continuously loop getting Lambda coin locations
+    from the Wishing Well and going to that spot to mine them. Will also pick up any treasures along the way,
+    and if inventory becomes full, will go to the shop to sell them, maximizing gold and LC profit.
+
+    If in dark world, player will go to the dark Wishing Well, wait until a new snitch location has been revealed
+    (means somebody else just got the last one), go there, and loot it. Player will perform a set amount of checks
+    at the well and will go to the specified location regardless after reaching that count.
+    """
     while True:
+        if player.world == 'dark':
+            print(f"\n{player.name} currently has {player.snitches} snitches!")
         if player.encumbrance >= player.strength:
             sell_loot()
         # travel to wishing well
-        travel_to_target(55)
+        travel_to_target(55 if player.world == 'light' else 555)
         # examine it to get the new hint
         new_room = player.examine('WELL')
-        print(f"Next coin can be mined in room {new_room}\n")
+        if player.world == 'dark':
+            print('Waiting for new snitch location...')
+            head_start = player.examine('WELL')
+            count = 0
+            check_limit = 100
+            while head_start == new_room and count < check_limit:
+                head_start = player.examine('WELL')
+                count += 1
+                if count >= check_limit:
+                    print(
+                        "You can't wait here any longer. Go to the last known location!")
+            new_room = head_start
+
+        print(
+            f"Next {'coin can be mined' if player.world == 'light' else 'snitch can be found'} in room {new_room}\n")
+        if player.encumbrance >= player.strength:
+            sell_loot()
         travel_to_target(int(new_room))
-        player.get_coin()
-        player.check_balance()
+        if player.world == 'light':
+            player.get_coin()
+            player.check_balance()
+        else:
+            # player automatically loots a golden snitch anytime they come across it, either
+            # from move or dash
+            time.sleep(player.cooldown)
+            player.check_self()
 
 
 def get_leaderboard():
-    time.sleep(player.cooldown)
+    """
+    Travels to location of the gold leaderboard and prints it out.
+    """
     travel_to_target(486)
     player.examine('BOOK')
 
 
 def transmogrify(item):
-    time.sleep(player.cooldown)
+    """
+    Tosses an acquired item and one Lambda Coin into the transmog in return for random gear.
+    """
     travel_to_target(495)
     player.transform_coin(item)
+
+
+def print_map():
+    """
+    Prints an approximation of the built map in the REPL.
+    """
+    m = player.map
+    g = player.graph
+    row = [" "] * 100
+    border = ["#"] * 155
+    grid = [['     ' for i in range(31)] for j in range(100)]
+    for i in [0, 1, 98, 99]:
+        grid[i] = border.copy()
+
+    for r_id in m:
+        coords = m[r_id]['coordinates']
+        x = int(coords[1:3])-45
+        y = int(coords[-3:-1])
+        has_e = 'e' in m[r_id]['exits'] and g[r_id]['e'] != "?"
+        if has_e:
+            grid[y][x] = str(r_id).zfill(3) + "--"
+        else:
+            grid[y][x] = str(r_id).zfill(3) + "  "
+
+    for line in grid:
+        print("".join(line))
 
 
 if __name__ == '__main__':
     running = True
     command_list = {
         "moveTo": {"call": player.travel, "arg_count": 1},
-        "buildMap": {"call": explore_maze, "arg_count": 0},
-        "travelTo": {"call": travel_to_target, "arg_count": 1},
         "loot": {"call": player.pick_up_loot, "arg_count": 1},
         "drop": {"call": player.drop_loot, "arg_count": 1},
-        "mine": {"call": player.get_coin, "arg_count": 0},
-        "pray": {"call": player.pray, "arg_count": 0},
-        "wear": {"call": player.wear, "arg_count": 1},
         "checkSelf": {"call": player.check_self, "arg_count": 0},
-        "sellLoot": {"call": sell_loot, "arg_count": 0},
         "roomDeets": {"call": player.check_room, "arg_count": 0},
+        "mine": {"call": player.get_coin, "arg_count": 0},
         "checkCoins": {"call": player.check_balance, "arg_count": 0},
-        "getName": {"call": get_name, "arg_count": 1},
+        "wear": {"call": player.wear, "arg_count": 1},
+        "pray": {"call": player.pray, "arg_count": 0},
+        "warp": {"call": player.warp, "arg_count": 0},
         "examine": {"call": player.examine, "arg_count": 1},
-        "getRich": {"call": get_rich, "arg_count": 0},
-        "getPowers": {"call": acquire_powers, "arg_count": 0},
-        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
+        "showMap": {"call": print_map, "arg_count": 0},
+        "buildMap": {"call": explore_maze, "arg_count": 0},
+        "travelTo": {"call": travel_to_target, "arg_count": 1},
+        "sellLoot": {"call": sell_loot, "arg_count": 0},
+        "getName": {"call": get_name, "arg_count": 1},
         "transmogrify": {"call": transmogrify, "arg_count": 1},
-        "warp": {"call": player.warp, "arg_count": 0}
+        "getPowers": {"call": acquire_powers, "arg_count": 0},
+        "getRich": {"call": get_rich, "arg_count": 0},
+        "getLeaderboard": {"call": get_leaderboard, "arg_count": 0},
     }
 
     while running:
@@ -288,12 +358,3 @@ if __name__ == '__main__':
                     " ".join(args) if len(args) > 1 else args[0])
             elif command_list[cmd]["arg_count"] == 0:
                 command_list[cmd]['call']()
-        # command_list[cmd]()
-    # player.travel('n')
-    # player.travel('s')
-    # explore_maze()
-    # travel_to_target(79)
-    # player.pick_up_loot('tiny treasure')
-    # print(player.inventory)
-    # player.drop_loot('tiny treasure')
-    # print(player.inventory)
